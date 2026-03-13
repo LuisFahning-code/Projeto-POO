@@ -1,5 +1,5 @@
 package br.com.vozdopovo.entity;
 
-public class Proposta {
-    
+public class PlanoDeGoverno {
+
 }
