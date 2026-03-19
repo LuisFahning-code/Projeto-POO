@@ -43,6 +43,15 @@ public class PlanoDeGoverno {
     @JoinColumn(name = "candidato_id", nullable = false, unique = true)
     private Candidato candidato;
 
+    @Column(length = 255)
+    private String nomeArquivoTxt;
+
+    @Column(length = 500)
+    private String caminhoArquivoTxt;
+
+    @Column
+    private LocalDateTime ultimaAtualizacaoTxtEm;
+
     public PlanoDeGoverno() {
     }
 
@@ -107,5 +116,29 @@ public class PlanoDeGoverno {
 
     public void setCandidato(Candidato candidato) {
         this.candidato = candidato;
+    }
+
+    public String getNomeArquivoTxt() {
+        return nomeArquivoTxt;
+    }
+
+    public void setNomeArquivoTxt(String nomeArquivoTxt) {
+        this.nomeArquivoTxt = nomeArquivoTxt;
+    }
+
+    public String getCaminhoArquivoTxt() {
+        return caminhoArquivoTxt;
+    }
+
+    public void setCaminhoArquivoTxt(String caminhoArquivoTxt) {
+        this.caminhoArquivoTxt = caminhoArquivoTxt;
+    }
+
+    public LocalDateTime getUltimaAtualizacaoTxtEm() {
+        return ultimaAtualizacaoTxtEm;
+    }
+
+    public void setUltimaAtualizacaoTxtEm(LocalDateTime ultimaAtualizacaoTxtEm) {
+        this.ultimaAtualizacaoTxtEm = ultimaAtualizacaoTxtEm;
     }
 }

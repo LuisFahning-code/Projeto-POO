@@ -2,8 +2,11 @@ package br.com.vozdopovo.entity;
 
 import java.time.LocalDateTime;
 
+import br.com.vozdopovo.enums.StatusPublicacao;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,10 +24,14 @@ public class Tema {
     private Long id;
 
     @Column(nullable = false, length = 100)
-    private String nome;
+    private String titulo;
 
     @Column(columnDefinition = "TEXT")
     private String descricao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private StatusPublicacao status;
 
     @Column(nullable = false)
     private LocalDateTime dataCriacao;
@@ -39,9 +46,9 @@ public class Tema {
     public Tema() {
     }
 
-    public Tema(String nome, String descricao, LocalDateTime dataCriacao,
+    public Tema(String titulo, String descricao, LocalDateTime dataCriacao, StatusPublicacao status,
                 LocalDateTime dataAtualizacao, PlanoDeGoverno planoDeGoverno) {
-        this.nome = nome;
+        this.titulo = titulo;
         this.descricao = descricao;
         this.dataCriacao = dataCriacao;
         this.dataAtualizacao = dataAtualizacao;
@@ -52,8 +59,8 @@ public class Tema {
         return id;
     }
 
-    public String getNome() {
-        return nome;
+    public String getTitulo() {
+        return titulo;
     }
 
     public String getDescricao() {
@@ -72,8 +79,8 @@ public class Tema {
         return planoDeGoverno;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setTitulo(String nome) {
+        this.titulo = nome;
     }
 
     public void setDescricao(String descricao) {
@@ -90,5 +97,13 @@ public class Tema {
 
     public void setPlanoDeGoverno(PlanoDeGoverno planoDeGoverno) {
         this.planoDeGoverno = planoDeGoverno;
+    }
+
+    public StatusPublicacao getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusPublicacao status) {
+        this.status = status;
     }
 }
