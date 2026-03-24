@@ -7,10 +7,13 @@ import org.springframework.stereotype.Service;
 import br.com.vozdopovo.entity.Candidato;
 import br.com.vozdopovo.entity.PlanoDeGoverno;
 import br.com.vozdopovo.enums.StatusPublicacao;
+import br.com.vozdopovo.exception.candidato.CandidatoNotFoundException;
 import br.com.vozdopovo.repository.CandidatoRepository;
 import br.com.vozdopovo.repository.PlanoDeGovernoRepository;
 import br.com.vozdopovo.service.PlanoDeGovernoService;
-
+import br.com.vozdopovo.exception.candidato.CandidatoNotFoundException;
+import br.com.vozdopovo.exception.plano.PlanoDeGovernoNotFoundException;
+import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
 @Service
 public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
 
@@ -26,7 +29,7 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
     @Override
     public PlanoDeGoverno criar(Long candidatoId, PlanoDeGoverno plano) {
         Candidato candidato = candidatoRepository.findById(candidatoId)
-                .orElseThrow(() -> new RuntimeException("Candidato não encontrado."));
+                .orElseThrow(() -> CandidatoNotFoundException(candidatoId));
 
         if (planoDeGovernoRepository.findByCandidatoId(candidatoId).isPresent()) {
             throw new RuntimeException("Este candidato já possui um plano de governo cadastrado.");
@@ -47,7 +50,7 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
     @Override
     public PlanoDeGoverno buscarPorId(Long id) {
         return planoDeGovernoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plano de governo não encontrado."));
+                .orElseThrow(() -> new PlanoDeGovernoNotFoundException(id));
     }
 
     // Retorna a busca do plano pelo Id do candidato
@@ -87,7 +90,7 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
         PlanoDeGoverno planoExistente = buscarPorId(id);
 
         if (status == null) {
-            throw new RuntimeException("O status do plano de governo deve ser informado.");
+            throw new CampoObrigatorioException("status");
         }
 
         planoExistente.setStatus(status);

@@ -10,6 +10,6 @@ public interface CandidatoService {
     Candidato buscarPorId(Long id);
     List<Candidato> buscarPorNome(String nome);
     List<Candidato> listarTodosAtivos();
-    Candidato atualizar(Long id, Candidato candidatoAtualizado);
+    Candidato atualizarDados(Long id, Candidato candidatoAtualizado);
     void desativar(Long id);
 }

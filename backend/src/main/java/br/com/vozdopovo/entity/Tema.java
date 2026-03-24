@@ -50,6 +50,7 @@ public class Tema {
                 LocalDateTime dataAtualizacao, PlanoDeGoverno planoDeGoverno) {
         this.titulo = titulo;
         this.descricao = descricao;
+        this.status = status;
         this.dataCriacao = dataCriacao;
         this.dataAtualizacao = dataAtualizacao;
         this.planoDeGoverno = planoDeGoverno;

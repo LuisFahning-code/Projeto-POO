@@ -14,7 +14,5 @@ public interface InteracaoService {
     List<Interacao> listarPorStatus(StatusInteracao status);
     List<Interacao> listarPorTipo(TipoInteracao tipo);
     Interacao responder(Long interacaoId, String resposta);
-    Interacao atualizarStatus(Long interacaoId, StatusInteracao status);
-    Interacao atualizar(Long id, Interacao interacaoAtualizada);
-    void deletar(Long id);
+    Interacao atualizarStatus(Long interacaoId, StatusInteracao status); 
 }

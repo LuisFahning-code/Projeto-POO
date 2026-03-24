@@ -86,7 +86,7 @@ public class TemaServiceImpl implements TemaService {
         Tema temaExistente = buscarPorId(id);
 
         if (status == null) {
-            throw new RuntimeException("O status do tema deve ser informado.");
+            throw new RuntimeException("O status do tema não pode ser nulo.");
         }
 
         temaExistente.setStatus(status);

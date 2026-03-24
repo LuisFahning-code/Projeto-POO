@@ -49,7 +49,7 @@ public class EleitorServiceImpl implements EleitorService {
 
     // Retorna a atualização dos dados  
     @Override
-    public Eleitor atualizar(Long id, Eleitor eleitorAtualizado) {
+    public Eleitor atualizarDados(Long id, Eleitor eleitorAtualizado) {
         Eleitor eleitorExistente = buscarPorId(id);
 
         atualizarCampoNome(eleitorExistente, eleitorAtualizado);

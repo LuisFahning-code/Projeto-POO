@@ -1,5 +1,7 @@
 package br.com.vozdopovo.entity;
 
+import java.time.LocalDateTime;
+
 import br.com.vozdopovo.enums.StatusInteracao;
 import br.com.vozdopovo.enums.TipoInteracao;
 import jakarta.persistence.Column;
@@ -50,11 +52,17 @@ public class Interacao {
     @JoinColumn(name = "candidato_id", nullable = false)
     private Candidato candidato;
 
+    @Column(nullable = false)
+    private LocalDateTime dataInicio;
+
+    @Column
+    private LocalDateTime dataResposta;
+
     public Interacao() {
     }
 
-    public Interacao(String titulo, String conteudo, TipoInteracao tipo,
-                     StatusInteracao status, String urlComprovacao,
+    public Interacao(String titulo, String conteudo, TipoInteracao tipo, LocalDateTime dataResposta,
+                     StatusInteracao status, String urlComprovacao, LocalDateTime dataInicio,
                      String resposta, Eleitor eleitor, Candidato candidato) {
         this.titulo = titulo;
         this.conteudo = conteudo;
@@ -64,6 +72,8 @@ public class Interacao {
         this.resposta = resposta;
         this.eleitor = eleitor;
         this.candidato = candidato;
+        this.dataInicio = dataInicio;
+        this.dataResposta = dataResposta;
     }
 
     public Long getId() {
@@ -132,5 +142,21 @@ public class Interacao {
 
     public void setCandidato(Candidato candidato) {
         this.candidato = candidato;
+    }
+
+    public LocalDateTime getDataInicio() {
+        return dataInicio;
+    }
+
+    public void setDataInicio(LocalDateTime dataInicio) {
+        this.dataInicio = dataInicio;
+    }
+
+    public LocalDateTime getDataResposta() {
+        return dataResposta;
+    }
+
+    public void setDataResposta(LocalDateTime dataResposta) {
+        this.dataResposta = dataResposta;
     }
 }

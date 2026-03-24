@@ -8,6 +8,6 @@ public interface EleitorService {
     Eleitor criar(Eleitor eleitor);
     Eleitor buscarPorId(Long id);
     List<Eleitor> listarTodosAtivos();
-    Eleitor atualizar(Long id, Eleitor eleitorAtualizado);
+    Eleitor atualizarDados(Long id, Eleitor eleitorAtualizado);
     void desativar(Long id);
 }

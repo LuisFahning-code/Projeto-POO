@@ -19,7 +19,7 @@ public class Eleitor extends Usuario {
     public Eleitor() {
     }
 
-    public Eleitor(String nome, String email, String senha, String status) {
+    public Eleitor(String nome, String email, String senha) {
         super(nome, email, senha);
         this.status = StatusConta.ATIVA;
     }
