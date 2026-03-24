@@ -3,12 +3,17 @@ package br.com.vozdopovo.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.vozdopovo.entity.Eleitor;
 import br.com.vozdopovo.enums.StatusConta;
 import br.com.vozdopovo.repository.EleitorRepository;
 import br.com.vozdopovo.service.EleitorService;
-
+import br.com.vozdopovo.exception.eleitor.EleitorEmailDuplicadoException;
+import br.com.vozdopovo.exception.eleitor.EleitorJaDesativadoException;
+import br.com.vozdopovo.exception.eleitor.EleitorNotFoundException;
+import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
+import br.com.vozdopovo.exception.validation.FormatoInvalidoException;
 @Service
 public class EleitorServiceImpl implements EleitorService {
 
@@ -19,6 +24,7 @@ public class EleitorServiceImpl implements EleitorService {
     }
 
     // Retorna o cadastramento da conta de um novo eleitor
+    @Transactional 
     @Override
     public Eleitor criar(Eleitor eleitor) {
         normalizarCampos(eleitor);
@@ -26,7 +32,7 @@ public class EleitorServiceImpl implements EleitorService {
         validarFormatoEmail(eleitor.getEmail());
 
         if (eleitorRepository.findByEmail(eleitor.getEmail()).isPresent()) {
-            throw new RuntimeException("Já existe um eleitor com esse e-mail");
+            throw new EleitorEmailDuplicadoException(eleitor.getEmail());
         }
 
         eleitor.setStatus(StatusConta.ATIVA);
@@ -35,19 +41,22 @@ public class EleitorServiceImpl implements EleitorService {
     }
 
     // Retorna a busca de um eleitor pelo Id
+    @Transactional (readOnly = true)
     @Override
     public Eleitor buscarPorId(Long id) {
         return eleitorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Eleitor não encontrado"));
+                .orElseThrow(() -> new EleitorNotFoundException(id));
     }
 
     // Retorna a lista de todos os eleitor em que a conta tem status ATIVA
+    @Transactional (readOnly = true)
     @Override
     public List<Eleitor> listarTodosAtivos() {
         return eleitorRepository.findByStatus(StatusConta.ATIVA);
     }
 
     // Retorna a atualização dos dados  
+    @Transactional 
     @Override
     public Eleitor atualizarDados(Long id, Eleitor eleitorAtualizado) {
         Eleitor eleitorExistente = buscarPorId(id);
@@ -60,12 +69,13 @@ public class EleitorServiceImpl implements EleitorService {
     }
 
     // Torna a conta com status DESATIVADA
+    @Transactional 
     @Override
     public void desativar(Long id) {
         Eleitor eleitor = buscarPorId(id);
 
         if (eleitor.getStatus() == StatusConta.DESATIVADA) {
-            throw new RuntimeException("Eleitor já está desativado");
+            throw new EleitorJaDesativadoException(id);
         }
 
         eleitor.setStatus(StatusConta.DESATIVADA);
@@ -90,22 +100,22 @@ public class EleitorServiceImpl implements EleitorService {
     // Validação de campos que devem ter preenchimento obrigatório
     private void validarCamposObrigatorios(Eleitor eleitor) {
         if (eleitor.getNome() == null || eleitor.getNome().isBlank()) {
-            throw new RuntimeException("Nome é obrigatório");
+            throw new CampoObrigatorioException("nome");
         }
 
         if (eleitor.getEmail() == null || eleitor.getEmail().isBlank()) {
-            throw new RuntimeException("E-mail é obrigatório");
+            throw new CampoObrigatorioException("email");
         }
 
         if (eleitor.getSenha() == null || eleitor.getSenha().isBlank()) {
-            throw new RuntimeException("Senha é obrigatória");
+            throw new CampoObrigatorioException("senha");
         }
     }
 
     // Validação do formato do email eleitor
     private void validarFormatoEmail(String email) {
         if (!email.contains("@")) {
-            throw new RuntimeException("Formato de e-mail inválido");
+            throw new FormatoInvalidoException("email", "deve conter @");
         }
     }
 
@@ -115,7 +125,7 @@ public class EleitorServiceImpl implements EleitorService {
             String nome = atualizado.getNome().trim();
 
             if (nome.isBlank()) {
-                throw new RuntimeException("Nome não pode ser vazio");
+                throw new CampoObrigatorioException("nome");
             }
 
             existente.setNome(nome);
@@ -128,14 +138,14 @@ public class EleitorServiceImpl implements EleitorService {
             String email = atualizado.getEmail().trim();
 
             if (email.isBlank()) {
-                throw new RuntimeException("E-mail não pode ser vazio");
+                throw new CampoObrigatorioException("email");
             }
 
             validarFormatoEmail(email);
 
             if (!existente.getEmail().equals(email)
                     && eleitorRepository.findByEmail(email).isPresent()) {
-                throw new RuntimeException("Já existe um eleitor com esse e-mail");
+                throw new EleitorEmailDuplicadoException(existente.getEmail());
             }
 
             existente.setEmail(email);
@@ -148,7 +158,7 @@ public class EleitorServiceImpl implements EleitorService {
             String senha = atualizado.getSenha().trim();
 
             if (senha.isBlank()) {
-                throw new RuntimeException("Senha não pode ser vazia");
+                throw new CampoObrigatorioException("senha");
             }
 
             existente.setSenha(senha);

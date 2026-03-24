@@ -10,6 +10,13 @@ import br.com.vozdopovo.repository.EleitorRepository;
 import br.com.vozdopovo.repository.InteracaoRepository;
 import br.com.vozdopovo.service.InteracaoService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import br.com.vozdopovo.exception.eleitor.EleitorNotFoundException;
+import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
+import br.com.vozdopovo.exception.candidato.CandidatoNotFoundException;
+import br.com.vozdopovo.exception.interacao.InteracaoNaoPermiteRespostaException;
+import br.com.vozdopovo.exception.interacao.InteracaoNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +37,7 @@ public class InteracaoServiceImpl implements InteracaoService {
     }
 
     // Retorno do cadastramento de uma nova Interação no banco// Retorna a busca da proposta pelo seu Id
+    @Transactional 
     @Override
     public Interacao criar(Long eleitorId, Long candidatoId, Interacao interacao) {
         if (interacao == null) {
@@ -37,17 +45,17 @@ public class InteracaoServiceImpl implements InteracaoService {
         }
 
         Eleitor eleitor = eleitorRepository.findById(eleitorId)
-                .orElseThrow(() -> new RuntimeException("Eleitor não encontrado com id: " + eleitorId));
+                .orElseThrow(() -> new EleitorNotFoundException(eleitorId));
 
         Candidato candidato = candidatoRepository.findById(candidatoId)
-                .orElseThrow(() -> new RuntimeException("Candidato não encontrado com id: " + candidatoId));
+                .orElseThrow(() -> new CandidatoNotFoundException(candidatoId));
 
         if (interacao.getConteudo() == null || interacao.getConteudo().isBlank()) {
-            throw new RuntimeException("O conteúdo da interação é obrigatório.");
+            throw new CampoObrigatorioException("conteudo");
         }
 
         if (interacao.getTipo() == null) {
-            throw new RuntimeException("O tipo da interação é obrigatório.");
+            throw new CampoObrigatorioException("tipo");
         }
 
         interacao.setEleitor(eleitor);
@@ -61,51 +69,62 @@ public class InteracaoServiceImpl implements InteracaoService {
     }
 
     // Retorno da busca de uma Interação pelo seu Id as proposta de um Tema
+    @Transactional (readOnly = true)
     @Override
     public Interacao buscarPorId(Long id) {
         return interacaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Interação não encontrada com id: " + id));
+                .orElseThrow(() -> new InteracaoNotFoundException(id));
     }
 
     // Retorna a lista de todas as Interações associadas a um candidato
+    @Transactional (readOnly = true)
     @Override
     public List<Interacao> listarPorCandidato(Long candidatoId) {
         return interacaoRepository.findByCandidatoId(candidatoId);
     }
 
     // Retona a lista de todas as Interações associadas a um eleitor
+    @Transactional (readOnly = true)
     @Override
     public List<Interacao> listarPorEleitor(Long eleitorId) {
         return interacaoRepository.findByEleitorId(eleitorId);
     }
 
     // Retorna a lista de todas as Interações associadas a um status
+    @Transactional (readOnly = true)
     @Override
     public List<Interacao> listarPorStatus(StatusInteracao status) {
         if (status == null) {
-            throw new RuntimeException("O status da interação deve ser informado.");
+            throw new CampoObrigatorioException("status");
         }
 
         return interacaoRepository.findByStatus(status);
     }
 
     // Retorna a lista de todas as Interações com base no seu tipo 
+    @Transactional (readOnly = true)
     @Override
     public List<Interacao> listarPorTipo(TipoInteracao tipo) {
         if (tipo == null) {
-            throw new RuntimeException("O tipo da interação deve ser informado.");
+            throw new CampoObrigatorioException("tipo");
         }
 
         return interacaoRepository.findByTipo(tipo);
     }
 
     // Retorna a resposta ao Eleitor
+    @Transactional 
     @Override
     public Interacao responder(Long interacaoId, String resposta) {
         Interacao interacaoExistente = buscarPorId(interacaoId);
 
+        if (interacaoExistente.getStatus() == StatusInteracao.FINALIZADA ||
+            interacaoExistente.getStatus() == StatusInteracao.RESPONDIDA) {
+            throw new InteracaoNaoPermiteRespostaException(interacaoId, interacaoExistente.getStatus());
+        }
+
         if (resposta == null || resposta.isBlank()) {
-            throw new RuntimeException("A resposta não pode ser vazia.");
+            throw new CampoObrigatorioException("resposta");
         }
 
         interacaoExistente.setResposta(resposta);
@@ -116,12 +135,13 @@ public class InteracaoServiceImpl implements InteracaoService {
     }
 
     // Retorna a atualização do Status de uma Interação
+    @Transactional 
     @Override
     public Interacao atualizarStatus(Long interacaoId, StatusInteracao status) {
         Interacao interacaoExistente = buscarPorId(interacaoId);
 
         if (status == null) {
-            throw new RuntimeException("O status da interação deve ser informado.");
+            throw new CampoObrigatorioException("status");
         }
 
         interacaoExistente.setStatus(status);

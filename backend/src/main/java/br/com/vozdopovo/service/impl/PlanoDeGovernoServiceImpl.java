@@ -3,17 +3,19 @@ package br.com.vozdopovo.service.impl;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.vozdopovo.entity.Candidato;
 import br.com.vozdopovo.entity.PlanoDeGoverno;
 import br.com.vozdopovo.enums.StatusPublicacao;
 import br.com.vozdopovo.exception.candidato.CandidatoNotFoundException;
+import br.com.vozdopovo.exception.plano.PlanoDeGovernoJaExisteException;
+import br.com.vozdopovo.exception.plano.PlanoDeGovernoNotFoundException;
+import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
 import br.com.vozdopovo.repository.CandidatoRepository;
 import br.com.vozdopovo.repository.PlanoDeGovernoRepository;
 import br.com.vozdopovo.service.PlanoDeGovernoService;
-import br.com.vozdopovo.exception.candidato.CandidatoNotFoundException;
-import br.com.vozdopovo.exception.plano.PlanoDeGovernoNotFoundException;
-import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
+
 @Service
 public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
 
@@ -26,13 +28,14 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
         this.candidatoRepository = candidatoRepository;
     }
 
+    @Transactional 
     @Override
     public PlanoDeGoverno criar(Long candidatoId, PlanoDeGoverno plano) {
         Candidato candidato = candidatoRepository.findById(candidatoId)
-                .orElseThrow(() -> CandidatoNotFoundException(candidatoId));
+                .orElseThrow(() -> new CandidatoNotFoundException(candidatoId));
 
         if (planoDeGovernoRepository.findByCandidatoId(candidatoId).isPresent()) {
-            throw new RuntimeException("Este candidato já possui um plano de governo cadastrado.");
+            throw new PlanoDeGovernoJaExisteException(candidato.getId());
         }
 
         plano.setCandidato(candidato);
@@ -47,6 +50,7 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
     }
 
     // Retorna a busca do plano pelo Id
+    @Transactional (readOnly = true)
     @Override
     public PlanoDeGoverno buscarPorId(Long id) {
         return planoDeGovernoRepository.findById(id)
@@ -54,13 +58,15 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
     }
 
     // Retorna a busca do plano pelo Id do candidato
+    @Transactional (readOnly = true)
     @Override
     public PlanoDeGoverno buscarPorCandidatoId(Long candidatoId) {
         return planoDeGovernoRepository.findByCandidatoId(candidatoId)
-                .orElseThrow(() -> new RuntimeException("Plano de governo do candidato não encontrado."));
+                .orElseThrow(() -> new PlanoDeGovernoNotFoundException(candidatoId));
     }
 
     // Retorna o plano com seus dados atualizados
+    @Transactional 
     @Override
     public PlanoDeGoverno atualizarDados(Long id, PlanoDeGoverno planoAtualizado) {
         PlanoDeGoverno planoExistente = buscarPorId(id);
@@ -85,6 +91,7 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
     }
 
     // Atualiza o status do plano, entre RASCUNHO, PUBLICADO e ARQUIVADO
+    @Transactional 
     @Override
     public PlanoDeGoverno atualizarStatus(Long id, StatusPublicacao status) {
         PlanoDeGoverno planoExistente = buscarPorId(id);

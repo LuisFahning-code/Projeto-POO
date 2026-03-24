@@ -3,12 +3,15 @@ package br.com.vozdopovo.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.vozdopovo.entity.Candidato;
 import br.com.vozdopovo.enums.StatusConta;
 import br.com.vozdopovo.exception.candidato.CandidatoEmailDuplicadoException;
 import br.com.vozdopovo.exception.candidato.CandidatoJaDesativadoException;
 import br.com.vozdopovo.exception.candidato.CandidatoNotFoundException;
+import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
+import br.com.vozdopovo.exception.validation.FormatoInvalidoException;
 import br.com.vozdopovo.repository.CandidatoRepository;
 import br.com.vozdopovo.service.CandidatoService;
 
@@ -21,6 +24,7 @@ public class CandidatoServiceImpl implements CandidatoService {
         this.candidatoRepository = candidatoRepository;
     }
 
+    @Transactional
     @Override
     public Candidato criar(Candidato candidato) {
         normalizarCampos(candidato);
@@ -28,29 +32,32 @@ public class CandidatoServiceImpl implements CandidatoService {
         validarFormatoEmail(candidato.getEmail());
 
         if (candidatoRepository.findByEmail(candidato.getEmail()).isPresent()) {
-            throw new CandidatoEmailDuplicadoException(candidato.getEmail()); // <-- antes: RuntimeException
+            throw new CandidatoEmailDuplicadoException(candidato.getEmail()); 
         }
 
         candidato.setStatus(StatusConta.ATIVA);
         return candidatoRepository.save(candidato);
     }
 
+    @Transactional (readOnly = true)
     @Override
     public Candidato buscarPorId(Long id) {
         return candidatoRepository.findById(id)
-                .orElseThrow(() -> new CandidatoNotFoundException(id)); // <-- antes: RuntimeException
+                .orElseThrow(() -> new CandidatoNotFoundException(id)); 
     }
 
-    @Override
+    @Transactional (readOnly = true)
     public List<Candidato> listarTodosAtivos() {
         return candidatoRepository.findByStatus(StatusConta.ATIVA);
     }
 
+    @Transactional (readOnly = true)
     @Override
     public List<Candidato> buscarPorNome(String nome) {
         return candidatoRepository.findByNomeContainingIgnoreCase(nome);
     }
 
+    @Transactional 
     @Override
     public Candidato atualizarDados(Long id, Candidato candidatoAtualizado) {
         Candidato candidatoExistente = buscarPorId(id);
@@ -65,12 +72,13 @@ public class CandidatoServiceImpl implements CandidatoService {
         return candidatoRepository.save(candidatoExistente);
     }
 
+    @Transactional 
     @Override
     public void desativar(Long id) {
         Candidato candidato = buscarPorId(id);
 
         if (candidato.getStatus() == StatusConta.DESATIVADA) {
-            throw new CandidatoJaDesativadoException(id); // <-- antes: RuntimeException
+            throw new CandidatoJaDesativadoException(id); 
         }
 
         candidato.setStatus(StatusConta.DESATIVADA);
@@ -78,7 +86,7 @@ public class CandidatoServiceImpl implements CandidatoService {
     }
 
     // =============================
-    //  MÉTODOS AUXILIARES (sem alteração)
+    //  MÉTODOS AUXILIARES 
     // =============================
 
     private void normalizarCampos(Candidato candidato) {
@@ -91,26 +99,26 @@ public class CandidatoServiceImpl implements CandidatoService {
 
     private void validarCamposObrigatorios(Candidato candidato) {
         if (candidato.getNome() == null || candidato.getNome().isBlank())
-            throw new RuntimeException("Nome é obrigatório");
+            throw new CampoObrigatorioException("nome");
         if (candidato.getEmail() == null || candidato.getEmail().isBlank())
-            throw new RuntimeException("E-mail é obrigatório");
+            throw new CampoObrigatorioException("email");
         if (candidato.getSenha() == null || candidato.getSenha().isBlank())
-            throw new RuntimeException("Senha é obrigatória");
+            throw new CampoObrigatorioException("senha");
         if (candidato.getPartido() == null || candidato.getPartido().isBlank())
-            throw new RuntimeException("Partido é obrigatório");
+            throw new CampoObrigatorioException("partido");
         if (candidato.getCargo() == null || candidato.getCargo().isBlank())
-            throw new RuntimeException("Cargo é obrigatório");
+            throw new CampoObrigatorioException("cargo");
     }
 
     private void validarFormatoEmail(String email) {
         if (!email.contains("@"))
-            throw new RuntimeException("Formato de e-mail inválido");
+            throw new FormatoInvalidoException("email", "deve conter @");
     }
 
     private void atualizarCampoNome(Candidato existente, Candidato atualizado) {
         if (atualizado.getNome() != null) {
             String nome = atualizado.getNome().trim();
-            if (nome.isBlank()) throw new RuntimeException("Nome não pode ser vazio");
+            if (nome.isBlank()) throw new CampoObrigatorioException("nome");
             existente.setNome(nome);
         }
     }
@@ -118,7 +126,7 @@ public class CandidatoServiceImpl implements CandidatoService {
     private void atualizarCampoEmail(Candidato existente, Candidato atualizado) {
         if (atualizado.getEmail() != null) {
             String email = atualizado.getEmail().trim();
-            if (email.isBlank()) throw new RuntimeException("E-mail não pode ser vazio");
+            if (email.isBlank()) throw new CampoObrigatorioException("email");
             validarFormatoEmail(email);
             if (!existente.getEmail().equals(email) && candidatoRepository.findByEmail(email).isPresent())
                 throw new CandidatoEmailDuplicadoException(email);
@@ -129,7 +137,7 @@ public class CandidatoServiceImpl implements CandidatoService {
     private void atualizarCampoSenha(Candidato existente, Candidato atualizado) {
         if (atualizado.getSenha() != null) {
             String senha = atualizado.getSenha().trim();
-            if (senha.isBlank()) throw new RuntimeException("Senha não pode ser vazia");
+            if (senha.isBlank()) throw new CampoObrigatorioException("senha");
             existente.setSenha(senha);
         }
     }
@@ -137,7 +145,7 @@ public class CandidatoServiceImpl implements CandidatoService {
     private void atualizarCampoPartido(Candidato existente, Candidato atualizado) {
         if (atualizado.getPartido() != null) {
             String partido = atualizado.getPartido().trim();
-            if (partido.isBlank()) throw new RuntimeException("Partido não pode ser vazio");
+            if (partido.isBlank()) throw new CampoObrigatorioException("partido");
             existente.setPartido(partido);
         }
     }
@@ -145,7 +153,7 @@ public class CandidatoServiceImpl implements CandidatoService {
     private void atualizarCampoCargo(Candidato existente, Candidato atualizado) {
         if (atualizado.getCargo() != null) {
             String cargo = atualizado.getCargo().trim();
-            if (cargo.isBlank()) throw new RuntimeException("Cargo não pode ser vazio");
+            if (cargo.isBlank()) throw new CampoObrigatorioException("cargo");
             existente.setCargo(cargo);
         }
     }
