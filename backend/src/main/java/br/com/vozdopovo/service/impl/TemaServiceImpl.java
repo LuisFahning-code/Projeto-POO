@@ -14,6 +14,7 @@ import br.com.vozdopovo.exception.tema.TemaNotFoundException;
 import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
 import br.com.vozdopovo.repository.PlanoDeGovernoRepository;
 import br.com.vozdopovo.repository.TemaRepository;
+import br.com.vozdopovo.service.GeradorTxtService;
 import br.com.vozdopovo.service.TemaService;
 
 @Service
@@ -21,11 +22,14 @@ public class TemaServiceImpl implements TemaService {
 
     private final TemaRepository temaRepository;
     private final PlanoDeGovernoRepository planoDeGovernoRepository;
+    private final GeradorTxtService geradorTxtService;
 
     public TemaServiceImpl(TemaRepository temaRepository,
-                           PlanoDeGovernoRepository planoDeGovernoRepository) {
+                           PlanoDeGovernoRepository planoDeGovernoRepository,
+                           GeradorTxtService geradorTxtService) {
         this.temaRepository = temaRepository;
         this.planoDeGovernoRepository = planoDeGovernoRepository;
+        this.geradorTxtService = geradorTxtService;
     }
 
     @Transactional
@@ -45,16 +49,14 @@ public class TemaServiceImpl implements TemaService {
         return temaRepository.save(tema);
     }
 
-    // Retorna a busca de um Tema pelo seu Id
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Tema buscarPorId(Long id) {
         return temaRepository.findById(id)
                 .orElseThrow(() -> new TemaNotFoundException(id));
     }
 
-    // Retorna a lista de Temas anexados a um Plano, buscado pelo Id
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Tema> listarPorPlano(Long planoId) {
         PlanoDeGoverno plano = planoDeGovernoRepository.findById(planoId)
@@ -63,8 +65,7 @@ public class TemaServiceImpl implements TemaService {
         return temaRepository.findByPlanoDeGovernoId(plano.getId());
     }
 
-    // Retorna os dados atualizados do Tema, caso existam mudanças
-    @Transactional 
+    @Transactional
     @Override
     public Tema atualizarDados(Long id, Tema temaAtualizado) {
         Tema temaExistente = buscarPorId(id);
@@ -83,13 +84,18 @@ public class TemaServiceImpl implements TemaService {
 
         if (alterou) {
             temaExistente.setDataAtualizacao(LocalDateTime.now());
+
+            // Regenera o TXT se o plano pai já estiver publicado
+            PlanoDeGoverno plano = temaExistente.getPlanoDeGoverno();
+            if (plano.getStatus() == StatusPublicacao.PUBLICADO) {
+                geradorTxtService.gerarTxt(plano);
+            }
         }
 
         return temaRepository.save(temaExistente);
     }
 
-    // Retorna a atualização do status do Tema, entre RASCUNHO, PUBLICADO e ARQUIVADO
-    @Transactional 
+    @Transactional
     @Override
     public Tema atualizarStatus(Long id, StatusPublicacao status) {
         Tema temaExistente = buscarPorId(id);
@@ -100,7 +106,14 @@ public class TemaServiceImpl implements TemaService {
 
         temaExistente.setStatus(status);
         temaExistente.setDataAtualizacao(LocalDateTime.now());
+        temaRepository.save(temaExistente);
 
-        return temaRepository.save(temaExistente);
+        // Regenera o TXT pois um tema mudou de visibilidade
+        PlanoDeGoverno plano = temaExistente.getPlanoDeGoverno();
+        if (plano.getStatus() == StatusPublicacao.PUBLICADO) {
+            geradorTxtService.gerarTxt(plano);
+        }
+
+        return temaExistente;
     }
 }

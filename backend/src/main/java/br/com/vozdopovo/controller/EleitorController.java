@@ -5,6 +5,8 @@ import br.com.vozdopovo.dto.eleitor.EleitorResponseDTO;
 import br.com.vozdopovo.entity.Eleitor;
 import br.com.vozdopovo.mapper.EleitorMapper;
 import br.com.vozdopovo.service.EleitorService;
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ public class EleitorController {
     }
 
     @PostMapping
-    public ResponseEntity<EleitorResponseDTO> criar(@RequestBody EleitorRequestDTO dto) {
+    public ResponseEntity<EleitorResponseDTO> criar(@RequestBody @Valid EleitorRequestDTO dto) {
         Eleitor eleitor = EleitorMapper.toEntity(dto);
         Eleitor novoEleitor = eleitorService.criar(eleitor);
         return ResponseEntity.status(HttpStatus.CREATED).body(EleitorMapper.toResponseDTO(novoEleitor));
@@ -47,7 +49,7 @@ public class EleitorController {
 
     @PutMapping("/{id}")
     public ResponseEntity<EleitorResponseDTO> atualizarDados(@PathVariable Long id,
-                                                        @RequestBody EleitorRequestDTO dto) {
+                                                        @RequestBody @Valid EleitorRequestDTO dto) {
         Eleitor eleitorAtualizado = EleitorMapper.toEntity(dto);
         Eleitor eleitor = eleitorService.atualizarDados(id, eleitorAtualizado);
         return ResponseEntity.ok(EleitorMapper.toResponseDTO(eleitor));

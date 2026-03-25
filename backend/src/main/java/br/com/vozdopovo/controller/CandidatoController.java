@@ -19,6 +19,7 @@ import br.com.vozdopovo.dto.candidato.CandidatoRequestDTO;
 import br.com.vozdopovo.dto.candidato.CandidatoResponseDTO;
 import br.com.vozdopovo.entity.Candidato;
 import br.com.vozdopovo.service.CandidatoService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/candidatos")
@@ -32,7 +33,7 @@ public class CandidatoController {
 
     // Retorna a criação de um novo Candidato
     @PostMapping
-    public ResponseEntity<CandidatoResponseDTO> criar(@RequestBody CandidatoRequestDTO dto) {
+    public ResponseEntity<CandidatoResponseDTO> criar(@RequestBody @Valid CandidatoRequestDTO dto) {
         Candidato candidato = CandidatoMapper.toEntity(dto);
         Candidato novoCandidato = candidatoService.criar(candidato);
         return ResponseEntity
@@ -75,7 +76,7 @@ public class CandidatoController {
     @PutMapping("/{id}")
     public ResponseEntity<CandidatoResponseDTO> atualizarDados(
             @PathVariable Long id,
-            @RequestBody CandidatoRequestDTO dto) {
+            @RequestBody @Valid CandidatoRequestDTO dto) {
 
         Candidato candidatoAtualizado = CandidatoMapper.toEntity(dto);
         Candidato candidato = candidatoService.atualizarDados(id, candidatoAtualizado);

@@ -12,6 +12,7 @@ import br.com.vozdopovo.entity.Proposta;
 import br.com.vozdopovo.enums.StatusPublicacao;
 import br.com.vozdopovo.mapper.PropostaMapper;
 import br.com.vozdopovo.service.PropostaService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/propostas")
@@ -25,7 +26,7 @@ public class PropostaController {
 
     @PostMapping("/tema/{temaId}")
     public ResponseEntity<PropostaResponseDTO> criar(@PathVariable Long temaId,
-                                                     @RequestBody PropostaRequestDTO requestDTO) {
+                                                     @RequestBody @Valid PropostaRequestDTO requestDTO) {
         Proposta proposta = PropostaMapper.toEntity(requestDTO);
         Proposta propostaCriada = propostaService.criar(temaId, proposta);
         return ResponseEntity.status(HttpStatus.CREATED).body(PropostaMapper.toResponseDTO(propostaCriada));
@@ -48,7 +49,7 @@ public class PropostaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PropostaResponseDTO> atualizarDados(@PathVariable Long id,
+    public ResponseEntity<PropostaResponseDTO> atualizarDados(@PathVariable @Valid Long id,
                                                               @RequestBody PropostaRequestDTO requestDTO) {
         Proposta propostaAtualizada = PropostaMapper.toEntity(requestDTO);
         Proposta proposta = propostaService.atualizarDados(id, propostaAtualizada);

@@ -6,12 +6,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.vozdopovo.entity.PlanoDeGoverno;
 import br.com.vozdopovo.entity.Proposta;
-import br.com.vozdopovo.entity.Tema;
 import br.com.vozdopovo.enums.StatusPublicacao;
 import br.com.vozdopovo.exception.proposta.PropostaNotFoundException;
 import br.com.vozdopovo.exception.validation.CampoObrigatorioException;
 import br.com.vozdopovo.repository.PropostaRepository;
+import br.com.vozdopovo.service.GeradorTxtService;
 import br.com.vozdopovo.service.PropostaService;
 import br.com.vozdopovo.service.TemaService;
 
@@ -20,17 +21,20 @@ public class PropostaServiceImpl implements PropostaService {
 
     private final PropostaRepository propostaRepository;
     private final TemaService temaService;
+    private final GeradorTxtService geradorTxtService;
 
-    public PropostaServiceImpl(PropostaRepository propostaRepository, TemaService temaService) {
+    public PropostaServiceImpl(PropostaRepository propostaRepository,
+                                TemaService temaService,
+                                GeradorTxtService geradorTxtService) {
         this.propostaRepository = propostaRepository;
         this.temaService = temaService;
+        this.geradorTxtService = geradorTxtService;
     }
 
-    // Retorna o cadastramento de uma nova proposta no Plano de Governo
-    @Transactional 
+    @Transactional
     @Override
     public Proposta criar(Long temaId, Proposta proposta) {
-        Tema tema = temaService.buscarPorId(temaId);
+        var tema = temaService.buscarPorId(temaId);
 
         proposta.setTema(tema);
         proposta.setPlanoDeGoverno(tema.getPlanoDeGoverno());
@@ -41,23 +45,20 @@ public class PropostaServiceImpl implements PropostaService {
         return propostaRepository.save(proposta);
     }
 
-    // Retorna a busca da proposta pelo seu Id
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Proposta buscarPorId(Long id) {
         return propostaRepository.findById(id)
                 .orElseThrow(() -> new PropostaNotFoundException(id));
     }
 
-    // Retorna a lista de todas as proposta de um Tema
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Proposta> listarPorTema(Long temaId) {
         return propostaRepository.findByTemaId(temaId);
     }
 
-    // Retorna a atualização dos dados da Proposta
-    @Transactional 
+    @Transactional
     @Override
     public Proposta atualizarDados(Long id, Proposta propostaAtualizada) {
         Proposta propostaExistente = buscarPorId(id);
@@ -81,13 +82,19 @@ public class PropostaServiceImpl implements PropostaService {
 
         if (alterou) {
             propostaExistente.setDataAtualizacao(LocalDateTime.now());
+
+            // Regenera o TXT se a proposta está publicada e o plano pai também
+            PlanoDeGoverno plano = propostaExistente.getPlanoDeGoverno();
+            if (propostaExistente.getStatus() == StatusPublicacao.PUBLICADO
+                    && plano.getStatus() == StatusPublicacao.PUBLICADO) {
+                geradorTxtService.gerarTxt(plano);
+            }
         }
 
         return propostaRepository.save(propostaExistente);
     }
 
-    // Retorna a atualização do status da Proposta, entre RASCUNHO, PUBLICADO e ARQUIVADO
-    @Transactional 
+    @Transactional
     @Override
     public Proposta atualizarStatus(Long id, StatusPublicacao status) {
         Proposta propostaExistente = buscarPorId(id);
@@ -98,7 +105,14 @@ public class PropostaServiceImpl implements PropostaService {
 
         propostaExistente.setStatus(status);
         propostaExistente.setDataAtualizacao(LocalDateTime.now());
+        propostaRepository.save(propostaExistente);
 
-        return propostaRepository.save(propostaExistente);
+        // Regenera o TXT pois uma proposta mudou de visibilidade
+        PlanoDeGoverno plano = propostaExistente.getPlanoDeGoverno();
+        if (plano.getStatus() == StatusPublicacao.PUBLICADO) {
+            geradorTxtService.gerarTxt(plano);
+        }
+
+        return propostaExistente;
     }
 }

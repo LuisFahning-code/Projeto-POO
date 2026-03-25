@@ -41,7 +41,7 @@ public class InteracaoServiceImpl implements InteracaoService {
     @Override
     public Interacao criar(Long eleitorId, Long candidatoId, Interacao interacao) {
         if (interacao == null) {
-            throw new RuntimeException("A interação não pode ser nula.");
+            throw new CampoObrigatorioException("interação");
         }
 
         Eleitor eleitor = eleitorRepository.findById(eleitorId)

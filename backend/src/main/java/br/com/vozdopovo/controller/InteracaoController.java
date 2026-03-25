@@ -14,6 +14,7 @@ import br.com.vozdopovo.enums.StatusInteracao;
 import br.com.vozdopovo.enums.TipoInteracao;
 import br.com.vozdopovo.mapper.InteracaoMapper;
 import br.com.vozdopovo.service.InteracaoService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/interacoes")
@@ -28,7 +29,7 @@ public class InteracaoController {
     @PostMapping("/eleitor/{eleitorId}/candidato/{candidatoId}")
     public ResponseEntity<InteracaoResponseDTO> criar(@PathVariable Long eleitorId,
                                                       @PathVariable Long candidatoId,
-                                                      @RequestBody InteracaoRequestDTO dto) {
+                                                      @RequestBody @Valid InteracaoRequestDTO dto) {
         Interacao interacao = InteracaoMapper.toEntity(dto);
         Interacao criada = interacaoService.criar(eleitorId, candidatoId, interacao);
 
@@ -84,7 +85,7 @@ public class InteracaoController {
 
     @PatchMapping("/{id}/responder")
     public ResponseEntity<InteracaoResponseDTO> responder(@PathVariable Long id,
-                                                          @RequestBody InteracaoRespostaRequestDTO dto) {
+                                                          @RequestBody @Valid InteracaoRespostaRequestDTO dto) {
         Interacao interacao = interacaoService.responder(id, dto.getResposta());
         return ResponseEntity.ok(InteracaoMapper.toResponseDTO(interacao));
     }

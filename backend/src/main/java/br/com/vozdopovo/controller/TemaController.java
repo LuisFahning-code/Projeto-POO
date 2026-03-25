@@ -12,6 +12,7 @@ import br.com.vozdopovo.entity.Tema;
 import br.com.vozdopovo.enums.StatusPublicacao;
 import br.com.vozdopovo.mapper.TemaMapper;
 import br.com.vozdopovo.service.TemaService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/temas")
@@ -25,7 +26,7 @@ public class TemaController {
 
     @PostMapping("/plano/{planoId}")
     public ResponseEntity<TemaResponseDTO> criar(@PathVariable Long planoId,
-                                                 @RequestBody TemaRequestDTO requestDTO) {
+                                                 @RequestBody @Valid TemaRequestDTO requestDTO) {
         Tema tema = TemaMapper.toEntity(requestDTO);
         Tema temaCriado = temaService.criar(planoId, tema);
         return ResponseEntity.status(HttpStatus.CREATED).body(TemaMapper.toResponseDTO(temaCriado));
@@ -49,7 +50,7 @@ public class TemaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TemaResponseDTO> atualizarDados(@PathVariable Long id,
-                                                          @RequestBody TemaRequestDTO requestDTO) {
+                                                          @RequestBody @Valid TemaRequestDTO requestDTO) {
         Tema temaAtualizado = TemaMapper.toEntity(requestDTO);
         Tema tema = temaService.atualizarDados(id, temaAtualizado);
         return ResponseEntity.ok(TemaMapper.toResponseDTO(tema));

@@ -6,6 +6,8 @@ import br.com.vozdopovo.entity.PlanoDeGoverno;
 import br.com.vozdopovo.enums.StatusPublicacao;
 import br.com.vozdopovo.mapper.PlanoDeGovernoMapper;
 import br.com.vozdopovo.service.PlanoDeGovernoService;
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ public class PlanoDeGovernoController {
     @PostMapping("/candidato/{candidatoId}")
     public ResponseEntity<PlanoDeGovernoResponseDTO> criar(
             @PathVariable Long candidatoId,
-            @RequestBody PlanoDeGovernoRequestDTO requestDTO) {
+            @RequestBody @Valid PlanoDeGovernoRequestDTO requestDTO) {
 
         PlanoDeGoverno plano = PlanoDeGovernoMapper.toEntity(requestDTO);
         PlanoDeGoverno planoCriado = planoDeGovernoService.criar(candidatoId, plano);
@@ -48,7 +50,7 @@ public class PlanoDeGovernoController {
     @PatchMapping("/{id}")
     public ResponseEntity<PlanoDeGovernoResponseDTO> atualizarDados(
             @PathVariable Long id,
-            @RequestBody PlanoDeGovernoRequestDTO requestDTO) {
+            @RequestBody @Valid PlanoDeGovernoRequestDTO requestDTO) {
 
         PlanoDeGoverno planoAtualizado = PlanoDeGovernoMapper.toEntity(requestDTO);
         PlanoDeGoverno plano = planoDeGovernoService.atualizarDados(id, planoAtualizado);
