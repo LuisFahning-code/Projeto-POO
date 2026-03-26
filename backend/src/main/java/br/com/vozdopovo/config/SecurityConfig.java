@@ -30,9 +30,10 @@ import br.com.vozdopovo.security.JwtFilter;
  *   GET  /v3/api-docs/**
  *   GET  /h2-console/**
  *
- * Todas as demais rotas exigem token JWT válido.
+ * Rotas autenticadas por role:
+ *   POST /ia/perguntar      → ELEITOR
  *
- * Coloque em: src/main/java/br/com/vozdopovo/config/SecurityConfig.java
+ * Todas as demais rotas exigem token JWT válido.
  */
 @Configuration
 public class SecurityConfig {
@@ -62,6 +63,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/planos-de-governo/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/temas/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/propostas/**").permitAll()
+
+                // CORREÇÃO #3: endpoint de IA liberado apenas para eleitores autenticados
+                .requestMatchers(HttpMethod.POST, "/ia/perguntar").hasRole("ELEITOR")
 
                 // Ferramentas de desenvolvimento
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()

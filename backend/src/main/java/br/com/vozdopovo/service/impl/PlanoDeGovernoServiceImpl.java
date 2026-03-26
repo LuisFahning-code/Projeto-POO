@@ -87,7 +87,6 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
         if (alterou) {
             planoExistente.setDataAtualizacao(LocalDateTime.now());
 
-            // Regenera o TXT se o plano já estiver publicado
             if (planoExistente.getStatus() == StatusPublicacao.PUBLICADO) {
                 geradorTxtService.gerarTxt(planoExistente);
             }
@@ -109,13 +108,14 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
         planoExistente.setStatus(status);
         planoExistente.setDataAtualizacao(LocalDateTime.now());
 
-        planoDeGovernoRepository.save(planoExistente);
+        // CORREÇÃO #6: reatribuir o objeto salvo para retornar os dados atualizados
+        PlanoDeGoverno salvo = planoDeGovernoRepository.save(planoExistente);
 
         // Gera o TXT na primeira publicação ou ao republicar
         if (status == StatusPublicacao.PUBLICADO && statusAnterior != StatusPublicacao.PUBLICADO) {
-            geradorTxtService.gerarTxt(planoExistente);
+            geradorTxtService.gerarTxt(salvo);
         }
 
-        return planoExistente;
+        return salvo;
     }
 }

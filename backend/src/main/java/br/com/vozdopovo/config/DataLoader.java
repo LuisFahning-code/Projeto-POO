@@ -23,10 +23,10 @@ import br.com.vozdopovo.repository.InteracaoRepository;
 import br.com.vozdopovo.repository.PlanoDeGovernoRepository;
 import br.com.vozdopovo.repository.PropostaRepository;
 import br.com.vozdopovo.repository.TemaRepository;
+import br.com.vozdopovo.service.GeradorTxtService;
 
 /**
  * Popula o banco H2 com dados de teste no startup.
- * Substitui o data.sql — as senhas são hasheadas pelo BCrypt em tempo de execução.
  *
  * Credenciais de teste:
  *   Candidatos : ana.souza@email.com     / senha123
@@ -34,8 +34,6 @@ import br.com.vozdopovo.repository.TemaRepository;
  *   Eleitores  : fernanda.lima@email.com / senha123
  *                joao.silva@email.com    / senha123
  *                mariana.costa@email.com / senha123
- *
- * Coloque em: src/main/java/br/com/vozdopovo/config/DataLoader.java
  */
 @Configuration
 public class DataLoader {
@@ -48,7 +46,9 @@ public class DataLoader {
             TemaRepository temaRepo,
             PropostaRepository propostaRepo,
             InteracaoRepository interacaoRepo,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            // CORREÇÃO #5: injetar GeradorTxtService para gerar os TXTs dos planos
+            GeradorTxtService geradorTxtService) {
 
         return args -> {
 
@@ -216,6 +216,14 @@ public class DataLoader {
             internet.setPlanoDeGoverno(planoCarlos);
             internet.setTema(tecnologia);
             propostaRepo.save(internet);
+
+            // -------------------------------------------------------
+            // CORREÇÃO #5: gerar arquivos TXT dos planos publicados
+            // Sem isso, caminhoArquivoTxt fica null e /ia/perguntar
+            // sempre lança PlanoSemArquivoTxtException nos dados de seed.
+            // -------------------------------------------------------
+            geradorTxtService.gerarTxt(planoAna);
+            geradorTxtService.gerarTxt(planoCarlos);
 
             // -------------------------------------------------------
             // Interações

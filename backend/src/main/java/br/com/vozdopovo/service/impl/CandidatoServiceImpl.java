@@ -2,6 +2,7 @@ package br.com.vozdopovo.service.impl;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +20,13 @@ import br.com.vozdopovo.service.CandidatoService;
 public class CandidatoServiceImpl implements CandidatoService {
 
     private final CandidatoRepository candidatoRepository;
+    // CORREÇÃO #1: injetar PasswordEncoder para hashear senhas
+    private final PasswordEncoder passwordEncoder;
 
-    public CandidatoServiceImpl(CandidatoRepository candidatoRepository) {
+    public CandidatoServiceImpl(CandidatoRepository candidatoRepository,
+                                PasswordEncoder passwordEncoder) {
         this.candidatoRepository = candidatoRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -32,32 +37,35 @@ public class CandidatoServiceImpl implements CandidatoService {
         validarFormatoEmail(candidato.getEmail());
 
         if (candidatoRepository.findByEmail(candidato.getEmail()).isPresent()) {
-            throw new CandidatoEmailDuplicadoException(candidato.getEmail()); 
+            throw new CandidatoEmailDuplicadoException(candidato.getEmail());
         }
 
+        // CORREÇÃO #1: hashear senha antes de persistir
+        candidato.setSenha(passwordEncoder.encode(candidato.getSenha()));
         candidato.setStatus(StatusConta.ATIVA);
         return candidatoRepository.save(candidato);
     }
 
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Candidato buscarPorId(Long id) {
         return candidatoRepository.findById(id)
-                .orElseThrow(() -> new CandidatoNotFoundException(id)); 
+                .orElseThrow(() -> new CandidatoNotFoundException(id));
     }
 
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
+    @Override
     public List<Candidato> listarTodosAtivos() {
         return candidatoRepository.findByStatus(StatusConta.ATIVA);
     }
 
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Candidato> buscarPorNome(String nome) {
         return candidatoRepository.findByNomeContainingIgnoreCase(nome);
     }
 
-    @Transactional 
+    @Transactional
     @Override
     public Candidato atualizarDados(Long id, Candidato candidatoAtualizado) {
         Candidato candidatoExistente = buscarPorId(id);
@@ -72,13 +80,13 @@ public class CandidatoServiceImpl implements CandidatoService {
         return candidatoRepository.save(candidatoExistente);
     }
 
-    @Transactional 
+    @Transactional
     @Override
     public void desativar(Long id) {
         Candidato candidato = buscarPorId(id);
 
         if (candidato.getStatus() == StatusConta.DESATIVADA) {
-            throw new CandidatoJaDesativadoException(id); 
+            throw new CandidatoJaDesativadoException(id);
         }
 
         candidato.setStatus(StatusConta.DESATIVADA);
@@ -86,7 +94,7 @@ public class CandidatoServiceImpl implements CandidatoService {
     }
 
     // =============================
-    //  MÉTODOS AUXILIARES 
+    //  MÉTODOS AUXILIARES
     // =============================
 
     private void normalizarCampos(Candidato candidato) {
@@ -138,7 +146,8 @@ public class CandidatoServiceImpl implements CandidatoService {
         if (atualizado.getSenha() != null) {
             String senha = atualizado.getSenha().trim();
             if (senha.isBlank()) throw new CampoObrigatorioException("senha");
-            existente.setSenha(senha);
+            // CORREÇÃO #1: hashear a nova senha antes de atualizar
+            existente.setSenha(passwordEncoder.encode(senha));
         }
     }
 

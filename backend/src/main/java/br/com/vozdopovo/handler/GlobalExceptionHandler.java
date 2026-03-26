@@ -1,17 +1,20 @@
 package br.com.vozdopovo.handler;
 
-import br.com.vozdopovo.exception.base.BusinessException;
-import br.com.vozdopovo.exception.base.ResourceNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.List;
+import br.com.vozdopovo.exception.base.BusinessException;
+import br.com.vozdopovo.exception.base.ResourceNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -70,6 +73,44 @@ public class GlobalExceptionHandler {
         problem.setProperty("timestamp", Instant.now());
         problem.setProperty("path", request.getRequestURI());
         problem.setProperty("errors", fieldErrors);
+
+        return problem;
+    }
+
+    // -------------------------------------------------------
+    // CORREÇÃO #9: 401 — Não autenticado
+    // Sem esse handler, AuthenticationException era capturada
+    // pelo handler genérico e retornava 500.
+    // -------------------------------------------------------
+    @ExceptionHandler(AuthenticationException.class)
+    public ProblemDetail handleAuthentication(AuthenticationException ex,
+                                              HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED, "Autenticação necessária.");
+
+        problem.setType(URI.create("https://vozdopovo.com.br/errors/unauthorized"));
+        problem.setTitle("Não autorizado");
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
+
+        return problem;
+    }
+
+    // -------------------------------------------------------
+    // CORREÇÃO #9: 403 — Acesso negado
+    // Sem esse handler, AccessDeniedException era capturada
+    // pelo handler genérico e retornava 500.
+    // -------------------------------------------------------
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDenied(AccessDeniedException ex,
+                                            HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN, "Você não tem permissão para acessar este recurso.");
+
+        problem.setType(URI.create("https://vozdopovo.com.br/errors/forbidden"));
+        problem.setTitle("Acesso negado");
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
 
         return problem;
     }
