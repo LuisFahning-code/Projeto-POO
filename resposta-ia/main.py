@@ -10,7 +10,7 @@ app = FastAPI()
 class PedidoEleitor(BaseModel):
     id_candidato: int
     caminho_txt: str
-    texto: str
+    pergunta: str
 
 # Receber o chamado da função processamento do Java
 @app.post("/processar")
@@ -18,14 +18,14 @@ class PedidoEleitor(BaseModel):
 async def responder_eleitor(pedido: PedidoEleitor):
 
     # Abrir o arquivo com as propostas do candidato
-    with open(f"plano_{pedido.id_candidato}.txt", "r", encoding="utf-8") as f:
+    with open(os.path.abspath(caminho_txt), "r", encoding="utf-8") as f:
         plano = f.read()
 
     # Prompt que vai ser enviado
     prompt = f"""
     Você é o assistente oficial do candidato de ID {pedido.id_candidato}.
     Use estas propostas para responder: {plano}
-    Pergunta do eleitor: {pedido.texto}
+    Pergunta do eleitor: {pedido.pergunta}
     Responda de forma curta, gentil e humana.
     """
 
