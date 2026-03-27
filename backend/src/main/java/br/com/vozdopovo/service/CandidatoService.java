@@ -8,6 +8,8 @@ public interface CandidatoService {
 
     Candidato criar(Candidato candidato);
     Candidato buscarPorId(Long id);
+    Candidato buscarPublicoPorId(Long id);
+    Candidato buscarPorEmail(String email);
     List<Candidato> buscarPorNome(String nome);
     List<Candidato> listarTodosAtivos();
     Candidato atualizarDados(Long id, Candidato candidatoAtualizado);

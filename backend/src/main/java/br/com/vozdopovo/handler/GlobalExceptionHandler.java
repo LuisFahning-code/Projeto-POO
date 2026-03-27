@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import br.com.vozdopovo.exception.base.BusinessException;
 import br.com.vozdopovo.exception.base.ResourceNotFoundException;
+import br.com.vozdopovo.exception.base.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
@@ -54,6 +55,24 @@ public class GlobalExceptionHandler {
     }
 
     // -------------------------------------------------------
+    // 400 — Erros de validação interna (CampoObrigatorioException,
+    //        FormatoInvalidoException e qualquer subclasse de ValidationException)
+    // -------------------------------------------------------
+    @ExceptionHandler(ValidationException.class)
+    public ProblemDetail handleValidationException(ValidationException ex,
+                                                   HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, ex.getMessage());
+
+        problem.setType(URI.create("https://vozdopovo.com.br/errors/validation"));
+        problem.setTitle("Erro de validação");
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
+
+        return problem;
+    }
+
+    // -------------------------------------------------------
     // 400 — Erros de validação de campos (@Valid / @Validated)
     // -------------------------------------------------------
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -78,9 +97,7 @@ public class GlobalExceptionHandler {
     }
 
     // -------------------------------------------------------
-    // CORREÇÃO #9: 401 — Não autenticado
-    // Sem esse handler, AuthenticationException era capturada
-    // pelo handler genérico e retornava 500.
+    // 401 — Não autenticado
     // -------------------------------------------------------
     @ExceptionHandler(AuthenticationException.class)
     public ProblemDetail handleAuthentication(AuthenticationException ex,
@@ -97,9 +114,7 @@ public class GlobalExceptionHandler {
     }
 
     // -------------------------------------------------------
-    // CORREÇÃO #9: 403 — Acesso negado
-    // Sem esse handler, AccessDeniedException era capturada
-    // pelo handler genérico e retornava 500.
+    // 403 — Acesso negado
     // -------------------------------------------------------
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException ex,

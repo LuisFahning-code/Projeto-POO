@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.vozdopovo.entity.Candidato;
 import br.com.vozdopovo.entity.Eleitor;
+import br.com.vozdopovo.enums.StatusConta;
 import br.com.vozdopovo.repository.CandidatoRepository;
 import br.com.vozdopovo.repository.EleitorRepository;
 import br.com.vozdopovo.security.JwtUtil;
@@ -21,16 +22,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-/**
- * Endpoint de autenticação.
- *
- * POST /auth/login
- * Body:  { "email": "...", "senha": "..." }
- * Retorno 200: { "token": "eyJ...", "role": "CANDIDATO", "id": 1, "nome": "Ana Beatriz" }
- * Retorno 401: ProblemDetail com mensagem de erro
- *
- * Coloque em: src/main/java/br/com/vozdopovo/controller/AuthController.java
- */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -58,6 +49,13 @@ public class AuthController {
         if (candidatoOpt.isPresent()) {
             Candidato candidato = candidatoOpt.get();
             if (passwordEncoder.matches(request.senha(), candidato.getSenha())) {
+
+                // CORREÇÃO #1: bloqueia login de contas desativadas
+                if (candidato.getStatus() != StatusConta.ATIVA) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(problemDeContaDesativada());
+                }
+
                 String token = jwtUtil.gerarToken(candidato.getEmail(), "CANDIDATO");
                 return ResponseEntity.ok(new LoginResponse(token, "CANDIDATO",
                         candidato.getId(), candidato.getNome()));
@@ -69,6 +67,13 @@ public class AuthController {
         if (eleitorOpt.isPresent()) {
             Eleitor eleitor = eleitorOpt.get();
             if (passwordEncoder.matches(request.senha(), eleitor.getSenha())) {
+
+                // CORREÇÃO #1: bloqueia login de contas desativadas
+                if (eleitor.getStatus() != StatusConta.ATIVA) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(problemDeContaDesativada());
+                }
+
                 String token = jwtUtil.gerarToken(eleitor.getEmail(), "ELEITOR");
                 return ResponseEntity.ok(new LoginResponse(token, "ELEITOR",
                         eleitor.getId(), eleitor.getNome()));
@@ -82,6 +87,15 @@ public class AuthController {
         problem.setTitle("Não autorizado");
         problem.setProperty("timestamp", Instant.now());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
+    }
+
+    private ProblemDetail problemDeContaDesativada() {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED, "Esta conta foi desativada e não pode fazer login.");
+        problem.setType(URI.create("https://vozdopovo.com.br/errors/unauthorized"));
+        problem.setTitle("Conta desativada");
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
     }
 
     // -------------------------------------------------------

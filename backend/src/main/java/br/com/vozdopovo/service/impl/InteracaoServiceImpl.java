@@ -36,8 +36,7 @@ public class InteracaoServiceImpl implements InteracaoService {
         this.candidatoRepository = candidatoRepository;
     }
 
-    // Retorno do cadastramento de uma nova Interação no banco// Retorna a busca da proposta pelo seu Id
-    @Transactional 
+    @Transactional
     @Override
     public Interacao criar(Long eleitorId, Long candidatoId, Interacao interacao) {
         if (interacao == null) {
@@ -68,52 +67,77 @@ public class InteracaoServiceImpl implements InteracaoService {
         return interacaoRepository.save(interacao);
     }
 
-    // Retorno da busca de uma Interação pelo seu Id as proposta de um Tema
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Interacao buscarPorId(Long id) {
         return interacaoRepository.findById(id)
                 .orElseThrow(() -> new InteracaoNotFoundException(id));
     }
 
-    // Retorna a lista de todas as Interações associadas a um candidato
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Interacao> listarPorCandidato(Long candidatoId) {
         return interacaoRepository.findByCandidatoId(candidatoId);
     }
 
-    // Retona a lista de todas as Interações associadas a um eleitor
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Interacao> listarPorEleitor(Long eleitorId) {
         return interacaoRepository.findByEleitorId(eleitorId);
     }
 
-    // Retorna a lista de todas as Interações associadas a um status
-    @Transactional (readOnly = true)
+    /**
+     * Retorna as interações de um eleitor específico com um candidato específico.
+     * Usado quando um eleitor acessa GET /interacoes/candidato/{candidatoId}:
+     * ele só deve ver as suas próprias interações com aquele candidato.
+     */
+    @Transactional(readOnly = true)
     @Override
-    public List<Interacao> listarPorStatus(StatusInteracao status) {
-        if (status == null) {
-            throw new CampoObrigatorioException("status");
-        }
-
-        return interacaoRepository.findByStatus(status);
+    public List<Interacao> listarPorEleitorECandidato(Long eleitorId, Long candidatoId) {
+        return interacaoRepository.findByEleitorIdAndCandidatoId(eleitorId, candidatoId);
     }
 
-    // Retorna a lista de todas as Interações com base no seu tipo 
-    @Transactional (readOnly = true)
+    /**
+     * Interações do candidato filtradas por status.
+     * Usado no GET /interacoes/status/{status} quando o token é de um candidato.
+     */
+    @Transactional(readOnly = true)
     @Override
-    public List<Interacao> listarPorTipo(TipoInteracao tipo) {
-        if (tipo == null) {
-            throw new CampoObrigatorioException("tipo");
-        }
-
-        return interacaoRepository.findByTipo(tipo);
+    public List<Interacao> listarPorCandidatoEStatus(Long candidatoId, StatusInteracao status) {
+        return interacaoRepository.findByCandidatoIdAndStatus(candidatoId, status);
     }
 
-    // Retorna a resposta ao Eleitor
-    @Transactional 
+    /**
+     * Interações do candidato filtradas por tipo.
+     * Usado no GET /interacoes/tipo/{tipo} quando o token é de um candidato.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public List<Interacao> listarPorCandidatoETipo(Long candidatoId, TipoInteracao tipo) {
+        return interacaoRepository.findByCandidatoIdAndTipo(candidatoId, tipo);
+    }
+
+    /**
+     * Interações do eleitor filtradas por status.
+     * Usado no GET /interacoes/status/{status} quando o token é de um eleitor.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public List<Interacao> listarPorEleitorEStatus(Long eleitorId, StatusInteracao status) {
+        return interacaoRepository.findByEleitorIdAndStatus(eleitorId, status);
+    }
+
+    /**
+     * Interações do eleitor filtradas por tipo.
+     * Usado no GET /interacoes/tipo/{tipo} quando o token é de um eleitor.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public List<Interacao> listarPorEleitorETipo(Long eleitorId, TipoInteracao tipo) {
+        return interacaoRepository.findByEleitorIdAndTipo(eleitorId, tipo);
+    }
+
+    @Transactional
     @Override
     public Interacao responder(Long interacaoId, String resposta) {
         Interacao interacaoExistente = buscarPorId(interacaoId);
@@ -134,8 +158,7 @@ public class InteracaoServiceImpl implements InteracaoService {
         return interacaoRepository.save(interacaoExistente);
     }
 
-    // Retorna a atualização do Status de uma Interação
-    @Transactional 
+    @Transactional
     @Override
     public Interacao atualizarStatus(Long interacaoId, StatusInteracao status) {
         Interacao interacaoExistente = buscarPorId(interacaoId);

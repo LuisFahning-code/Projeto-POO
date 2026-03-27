@@ -20,7 +20,6 @@ import br.com.vozdopovo.service.EleitorService;
 public class EleitorServiceImpl implements EleitorService {
 
     private final EleitorRepository eleitorRepository;
-    // CORREÇÃO #1: injetar PasswordEncoder para hashear senhas
     private final PasswordEncoder passwordEncoder;
 
     public EleitorServiceImpl(EleitorRepository eleitorRepository,
@@ -40,7 +39,6 @@ public class EleitorServiceImpl implements EleitorService {
             throw new EleitorEmailDuplicadoException(eleitor.getEmail());
         }
 
-        // CORREÇÃO #1: hashear senha antes de persistir
         eleitor.setSenha(passwordEncoder.encode(eleitor.getSenha()));
         eleitor.setStatus(StatusConta.ATIVA);
 
@@ -52,6 +50,17 @@ public class EleitorServiceImpl implements EleitorService {
     public Eleitor buscarPorId(Long id) {
         return eleitorRepository.findById(id)
                 .orElseThrow(() -> new EleitorNotFoundException(id));
+    }
+
+    /**
+     * Busca um eleitor pelo e-mail. Lança EleitorNotFoundException se não
+     * encontrado — mantendo consistência de resposta (HTTP 404).
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public Eleitor buscarPorEmail(String email) {
+        return eleitorRepository.findByEmail(email)
+                .orElseThrow(() -> new EleitorNotFoundException(0L));
     }
 
     @Transactional(readOnly = true)
@@ -135,7 +144,6 @@ public class EleitorServiceImpl implements EleitorService {
             validarFormatoEmail(email);
             if (!existente.getEmail().equals(email)
                     && eleitorRepository.findByEmail(email).isPresent()) {
-                // CORREÇÃO #2: passar o novo email (variável local), não o email antigo
                 throw new EleitorEmailDuplicadoException(email);
             }
             existente.setEmail(email);
@@ -148,7 +156,6 @@ public class EleitorServiceImpl implements EleitorService {
             if (senha.isBlank()) {
                 throw new CampoObrigatorioException("senha");
             }
-            // CORREÇÃO #1: hashear a nova senha antes de atualizar
             existente.setSenha(passwordEncoder.encode(senha));
         }
     }

@@ -14,8 +14,9 @@ public class PlanoDeGovernoMapper {
         PlanoDeGoverno plano = new PlanoDeGoverno();
         plano.setTitulo(dto.getTitulo());
         plano.setApresentacao(dto.getApresentacao());
-        plano.setNomeArquivoTxt(dto.getNomeArquivoTxt());
-        plano.setCaminhoArquivoTxt(dto.getCaminhoArquivoTxt());
+        // MELHORIA #7: nomeArquivoTxt e caminhoArquivoTxt removidos —
+        // esses campos são preenchidos exclusivamente pelo GeradorTxtService
+        // e nunca devem vir do cliente.
 
         return plano;
     }
@@ -33,7 +34,8 @@ public class PlanoDeGovernoMapper {
         dto.setDataCriacao(plano.getDataCriacao());
         dto.setDataAtualizacao(plano.getDataAtualizacao());
         dto.setNomeArquivoTxt(plano.getNomeArquivoTxt());
-        dto.setCaminhoArquivoTxt(plano.getCaminhoArquivoTxt());
+        // MELHORIA #7: caminhoArquivoTxt não é exposto na resposta ao cliente —
+        // é um detalhe de infraestrutura interno do servidor.
         dto.setUltimaAtualizacaoTxtEm(plano.getUltimaAtualizacaoTxtEm());
 
         if (plano.getCandidato() != null) {

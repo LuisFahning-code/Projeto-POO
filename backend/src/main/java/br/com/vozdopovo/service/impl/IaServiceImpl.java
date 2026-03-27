@@ -9,10 +9,15 @@ import br.com.vozdopovo.dto.ia.IaRequestDTO;
 import br.com.vozdopovo.dto.ia.IaResponseDTO;
 import br.com.vozdopovo.dto.ia.PerguntaRequestDTO;
 import br.com.vozdopovo.dto.ia.PerguntaResponseDTO;
+import br.com.vozdopovo.entity.Eleitor;
 import br.com.vozdopovo.entity.PlanoDeGoverno;
+import br.com.vozdopovo.enums.StatusConta;
+import br.com.vozdopovo.enums.StatusPublicacao;
+import br.com.vozdopovo.exception.eleitor.EleitorNotFoundException;
 import br.com.vozdopovo.exception.ia.IaIndisponivel;
 import br.com.vozdopovo.exception.ia.PlanoSemArquivoTxtException;
 import br.com.vozdopovo.exception.plano.PlanoDeGovernoNotFoundException;
+import br.com.vozdopovo.repository.EleitorRepository;
 import br.com.vozdopovo.repository.PlanoDeGovernoRepository;
 import br.com.vozdopovo.service.IaService;
 
@@ -20,24 +25,44 @@ import br.com.vozdopovo.service.IaService;
 public class IaServiceImpl implements IaService {
 
     private final PlanoDeGovernoRepository planoDeGovernoRepository;
+    private final EleitorRepository eleitorRepository;
     private final RestTemplate restTemplate;
 
     @Value("${ia.api.url}")
     private String iaApiUrl;
 
     public IaServiceImpl(PlanoDeGovernoRepository planoDeGovernoRepository,
+                         EleitorRepository eleitorRepository,
                          RestTemplate restTemplate) {
         this.planoDeGovernoRepository = planoDeGovernoRepository;
+        this.eleitorRepository = eleitorRepository;
         this.restTemplate = restTemplate;
     }
 
     @Override
-    public PerguntaResponseDTO processarPergunta(PerguntaRequestDTO request) {
+    public PerguntaResponseDTO processarPergunta(PerguntaRequestDTO request, String emailEleitor) {
+
+        // MELHORIA #8: valida que o eleitor autenticado existe e está com conta ativa.
+        // Isso impede que tokens de contas desativadas consumam a API de IA,
+        // e garante um erro claro (404/422) em vez de um falso sucesso.
+        Eleitor eleitor = eleitorRepository.findByEmail(emailEleitor)
+                .orElseThrow(() -> new EleitorNotFoundException(emailEleitor));
+
+        if (eleitor.getStatus() != StatusConta.ATIVA) {
+            throw new EleitorNotFoundException(emailEleitor);
+        }
 
         // Busca o plano do candidato no banco
         PlanoDeGoverno plano = planoDeGovernoRepository
                 .findByCandidatoId(request.getCandidatoId())
                 .orElseThrow(() -> new PlanoDeGovernoNotFoundException(request.getCandidatoId()));
+
+        // MELHORIA #8: verifica se o plano está publicado.
+        // Sem isso, eleitores podiam fazer perguntas sobre rascunhos
+        // que o candidato ainda não tornou públicos.
+        if (plano.getStatus() != StatusPublicacao.PUBLICADO) {
+            throw new PlanoDeGovernoNotFoundException(request.getCandidatoId());
+        }
 
         // Verifica se o TXT já foi gerado
         if (plano.getCaminhoArquivoTxt() == null || plano.getCaminhoArquivoTxt().isBlank()) {

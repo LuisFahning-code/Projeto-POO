@@ -14,7 +14,13 @@ public interface CandidatoRepository extends JpaRepository<Candidato, Long> {
 
     boolean existsByEmail(String email);
 
-    List<Candidato> findByNomeContainingIgnoreCase(String nome);
+    /**
+     * Busca pública por nome: retorna apenas candidatos com conta ATIVA.
+     * Candidatos desativados não aparecem nos resultados.
+     */
+    List<Candidato> findByNomeContainingIgnoreCaseAndStatus(String nome, StatusConta status);
 
     List<Candidato> findByStatus(StatusConta status);
+
+    Optional<Candidato> findByIdAndStatus(Long id, StatusConta status);
 }

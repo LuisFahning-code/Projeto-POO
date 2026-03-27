@@ -67,6 +67,32 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
                 .orElseThrow(() -> new PlanoDeGovernoNotFoundException(candidatoId));
     }
 
+    /**
+     * Busca pública por id: retorna o plano somente se estiver PUBLICADO.
+     * Rascunhos e arquivados geram 404, impedindo que usuários não autenticados
+     * descubram conteúdo ainda não publicado.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public PlanoDeGoverno buscarPublicoPorId(Long id) {
+        PlanoDeGoverno plano = buscarPorId(id);
+        if (plano.getStatus() != StatusPublicacao.PUBLICADO) {
+            throw new PlanoDeGovernoNotFoundException(id);
+        }
+        return plano;
+    }
+
+    /**
+     * Busca pública por candidato: retorna o plano somente se estiver PUBLICADO.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public PlanoDeGoverno buscarPublicoPorCandidatoId(Long candidatoId) {
+        return planoDeGovernoRepository
+                .findByCandidatoIdAndStatus(candidatoId, StatusPublicacao.PUBLICADO)
+                .orElseThrow(() -> new PlanoDeGovernoNotFoundException(candidatoId));
+    }
+
     @Transactional
     @Override
     public PlanoDeGoverno atualizarDados(Long id, PlanoDeGoverno planoAtualizado) {
@@ -108,10 +134,8 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
         planoExistente.setStatus(status);
         planoExistente.setDataAtualizacao(LocalDateTime.now());
 
-        // CORREÇÃO #6: reatribuir o objeto salvo para retornar os dados atualizados
         PlanoDeGoverno salvo = planoDeGovernoRepository.save(planoExistente);
 
-        // Gera o TXT na primeira publicação ou ao republicar
         if (status == StatusPublicacao.PUBLICADO && statusAnterior != StatusPublicacao.PUBLICADO) {
             geradorTxtService.gerarTxt(salvo);
         }

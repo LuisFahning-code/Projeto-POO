@@ -58,6 +58,29 @@ public class PropostaServiceImpl implements PropostaService {
         return propostaRepository.findByTemaId(temaId);
     }
 
+    /**
+     * Busca pública por id: retorna a proposta somente se estiver PUBLICADA.
+     * Rascunhos e arquivados geram 404 para usuários não autenticados.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public Proposta buscarPublicaPorId(Long id) {
+        Proposta proposta = buscarPorId(id);
+        if (proposta.getStatus() != StatusPublicacao.PUBLICADO) {
+            throw new PropostaNotFoundException(id);
+        }
+        return proposta;
+    }
+
+    /**
+     * Listagem pública por tema: retorna apenas propostas PUBLICADAS.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public List<Proposta> listarPublicasPorTema(Long temaId) {
+        return propostaRepository.findByTemaIdAndStatus(temaId, StatusPublicacao.PUBLICADO);
+    }
+
     @Transactional
     @Override
     public Proposta atualizarDados(Long id, Proposta propostaAtualizada) {
@@ -83,7 +106,6 @@ public class PropostaServiceImpl implements PropostaService {
         if (alterou) {
             propostaExistente.setDataAtualizacao(LocalDateTime.now());
 
-            // Regenera o TXT se a proposta está publicada e o plano pai também
             PlanoDeGoverno plano = propostaExistente.getPlanoDeGoverno();
             if (propostaExistente.getStatus() == StatusPublicacao.PUBLICADO
                     && plano.getStatus() == StatusPublicacao.PUBLICADO) {
@@ -105,14 +127,14 @@ public class PropostaServiceImpl implements PropostaService {
 
         propostaExistente.setStatus(status);
         propostaExistente.setDataAtualizacao(LocalDateTime.now());
-        propostaRepository.save(propostaExistente);
 
-        // Regenera o TXT pois uma proposta mudou de visibilidade
-        PlanoDeGoverno plano = propostaExistente.getPlanoDeGoverno();
+        Proposta salva = propostaRepository.save(propostaExistente);
+
+        PlanoDeGoverno plano = salva.getPlanoDeGoverno();
         if (plano.getStatus() == StatusPublicacao.PUBLICADO) {
             geradorTxtService.gerarTxt(plano);
         }
 
-        return propostaExistente;
+        return salva;
     }
 }

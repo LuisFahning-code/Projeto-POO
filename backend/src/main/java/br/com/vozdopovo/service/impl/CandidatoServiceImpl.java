@@ -20,7 +20,6 @@ import br.com.vozdopovo.service.CandidatoService;
 public class CandidatoServiceImpl implements CandidatoService {
 
     private final CandidatoRepository candidatoRepository;
-    // CORREÇÃO #1: injetar PasswordEncoder para hashear senhas
     private final PasswordEncoder passwordEncoder;
 
     public CandidatoServiceImpl(CandidatoRepository candidatoRepository,
@@ -40,7 +39,6 @@ public class CandidatoServiceImpl implements CandidatoService {
             throw new CandidatoEmailDuplicadoException(candidato.getEmail());
         }
 
-        // CORREÇÃO #1: hashear senha antes de persistir
         candidato.setSenha(passwordEncoder.encode(candidato.getSenha()));
         candidato.setStatus(StatusConta.ATIVA);
         return candidatoRepository.save(candidato);
@@ -55,14 +53,37 @@ public class CandidatoServiceImpl implements CandidatoService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Candidato> listarTodosAtivos() {
-        return candidatoRepository.findByStatus(StatusConta.ATIVA);
+    public Candidato buscarPublicoPorId(Long id) {
+        return candidatoRepository.findByIdAndStatus(id, StatusConta.ATIVA)
+                .orElseThrow(() -> new CandidatoNotFoundException(id));
+    }
+
+    /**
+     * Busca um candidato pelo e-mail. Lança CandidatoNotFoundException se não
+     * encontrado — mesmo tipo de exceção usado em buscarPorId para manter
+     * consistência de resposta (HTTP 404).
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public Candidato buscarPorEmail(String email) {
+        return candidatoRepository.findByEmail(email)
+                .orElseThrow(() -> new CandidatoNotFoundException(0L));
     }
 
     @Transactional(readOnly = true)
     @Override
+    public List<Candidato> listarTodosAtivos() {
+        return candidatoRepository.findByStatus(StatusConta.ATIVA);
+    }
+
+    /**
+     * Busca por nome: retorna apenas candidatos com conta ATIVA.
+     * Candidatos desativados não aparecem em buscas públicas.
+     */
+    @Transactional(readOnly = true)
+    @Override
     public List<Candidato> buscarPorNome(String nome) {
-        return candidatoRepository.findByNomeContainingIgnoreCase(nome);
+        return candidatoRepository.findByNomeContainingIgnoreCaseAndStatus(nome, StatusConta.ATIVA);
     }
 
     @Transactional
@@ -146,7 +167,6 @@ public class CandidatoServiceImpl implements CandidatoService {
         if (atualizado.getSenha() != null) {
             String senha = atualizado.getSenha().trim();
             if (senha.isBlank()) throw new CampoObrigatorioException("senha");
-            // CORREÇÃO #1: hashear a nova senha antes de atualizar
             existente.setSenha(passwordEncoder.encode(senha));
         }
     }

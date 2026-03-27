@@ -22,16 +22,33 @@ import br.com.vozdopovo.security.JwtFilter;
  *   POST /auth/login
  *   POST /candidatos        (cadastro)
  *   POST /eleitores         (cadastro)
- *   GET  /candidatos/**     (consulta pública)
- *   GET  /planos-de-governo/**
- *   GET  /temas/**
- *   GET  /propostas/**
+ *   GET  /candidatos/**     (consulta pública — apenas candidatos ativos)
+ *   GET  /planos-de-governo/{id}            (apenas PUBLICADO)
+ *   GET  /planos-de-governo/candidato/**    (apenas PUBLICADO)
+ *   GET  /temas/{id}                        (apenas PUBLICADO)
+ *   GET  /temas/plano/**                    (apenas PUBLICADO)
+ *   GET  /propostas/{id}                    (apenas PUBLICADA)
+ *   GET  /propostas/tema/**                 (apenas PUBLICADA)
  *   GET  /swagger-ui/**
  *   GET  /v3/api-docs/**
  *   GET  /h2-console/**
  *
- * Rotas autenticadas por role:
+ * Rotas autenticadas com role específico:
  *   POST /ia/perguntar      → ELEITOR
+ *
+ * Rotas que exigem autenticação (ownership verificado no controller):
+ *   GET  /planos-de-governo/{id}/meu
+ *   GET  /temas/{id}/meu
+ *   GET  /temas/plano/{id}/todos
+ *   GET  /propostas/{id}/minha
+ *   GET  /propostas/tema/{id}/todas
+ *   POST /planos-de-governo/**
+ *   POST /temas/**
+ *   POST /propostas/**
+ *   PATCH/PUT nos recursos acima
+ *   /interacoes/**
+ *   /eleitores/** (PUT, PATCH)
+ *   /candidatos/** (PUT, DELETE)
  *
  * Todas as demais rotas exigem token JWT válido.
  */
@@ -58,23 +75,36 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/candidatos").permitAll()
                 .requestMatchers(HttpMethod.POST, "/eleitores").permitAll()
 
-                // Consultas públicas
-                .requestMatchers(HttpMethod.GET, "/candidatos/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/planos-de-governo/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/temas/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/propostas/**").permitAll()
+                // Consultas públicas de candidatos
+                // ATENÇÃO: matchers exatos — não usa ** para evitar capturar rotas internas futuras
+                .requestMatchers(HttpMethod.GET, "/candidatos/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/candidatos/buscar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/candidatos/ativos").permitAll()
 
-                // CORREÇÃO #3: endpoint de IA liberado apenas para eleitores autenticados
+                // Consultas públicas de planos (apenas PUBLICADOS — filtro no service)
+                .requestMatchers(HttpMethod.GET, "/planos-de-governo/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/planos-de-governo/candidato/{candidatoId}").permitAll()
+
+                // Consultas públicas de temas (apenas PUBLICADOS — filtro no service)
+                // CORREÇÃO: era "/temas/plano/**" — o wildcard capturava "/temas/plano/{id}/todos" (rota interna)
+                .requestMatchers(HttpMethod.GET, "/temas/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/temas/plano/{planoId}").permitAll()
+
+                // Consultas públicas de propostas (apenas PUBLICADAS — filtro no service)
+                // CORREÇÃO: era "/propostas/tema/**" — o wildcard capturava "/propostas/tema/{id}/todas" (rota interna)
+                .requestMatchers(HttpMethod.GET, "/propostas/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/propostas/tema/{temaId}").permitAll()
+
+                // Endpoint de IA liberado apenas para eleitores autenticados
                 .requestMatchers(HttpMethod.POST, "/ia/perguntar").hasRole("ELEITOR")
 
                 // Ferramentas de desenvolvimento
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
 
-                // Tudo mais exige autenticação
+                // Tudo mais exige autenticação (ownership verificado nos controllers)
                 .anyRequest().authenticated()
             )
-            // Permite o frame do H2 console
             .headers(h -> h.frameOptions(f -> f.sameOrigin()))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

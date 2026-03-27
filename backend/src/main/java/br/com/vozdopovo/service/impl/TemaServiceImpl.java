@@ -65,6 +65,32 @@ public class TemaServiceImpl implements TemaService {
         return temaRepository.findByPlanoDeGovernoId(plano.getId());
     }
 
+    /**
+     * Busca pública por id: retorna o tema somente se estiver PUBLICADO.
+     * Rascunhos e arquivados geram 404 para usuários não autenticados.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public Tema buscarPublicoPorId(Long id) {
+        Tema tema = buscarPorId(id);
+        if (tema.getStatus() != StatusPublicacao.PUBLICADO) {
+            throw new TemaNotFoundException(id);
+        }
+        return tema;
+    }
+
+    /**
+     * Listagem pública por plano: retorna apenas temas PUBLICADOS.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public List<Tema> listarPublicosPorPlano(Long planoId) {
+        if (!planoDeGovernoRepository.existsById(planoId)) {
+            throw new PlanoDeGovernoNotFoundException(planoId);
+        }
+        return temaRepository.findByPlanoDeGovernoIdAndStatus(planoId, StatusPublicacao.PUBLICADO);
+    }
+
     @Transactional
     @Override
     public Tema atualizarDados(Long id, Tema temaAtualizado) {
@@ -85,7 +111,6 @@ public class TemaServiceImpl implements TemaService {
         if (alterou) {
             temaExistente.setDataAtualizacao(LocalDateTime.now());
 
-            // Regenera o TXT se o plano pai já estiver publicado
             PlanoDeGoverno plano = temaExistente.getPlanoDeGoverno();
             if (plano.getStatus() == StatusPublicacao.PUBLICADO) {
                 geradorTxtService.gerarTxt(plano);
@@ -106,14 +131,14 @@ public class TemaServiceImpl implements TemaService {
 
         temaExistente.setStatus(status);
         temaExistente.setDataAtualizacao(LocalDateTime.now());
-        temaRepository.save(temaExistente);
 
-        // Regenera o TXT pois um tema mudou de visibilidade
-        PlanoDeGoverno plano = temaExistente.getPlanoDeGoverno();
+        Tema salvo = temaRepository.save(temaExistente);
+
+        PlanoDeGoverno plano = salvo.getPlanoDeGoverno();
         if (plano.getStatus() == StatusPublicacao.PUBLICADO) {
             geradorTxtService.gerarTxt(plano);
         }
 
-        return temaExistente;
+        return salvo;
     }
 }
