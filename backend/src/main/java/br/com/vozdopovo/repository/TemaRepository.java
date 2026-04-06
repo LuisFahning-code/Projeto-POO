@@ -11,7 +11,7 @@ public interface TemaRepository extends JpaRepository<Tema, Long> {
 
     List<Tema> findByPlanoDeGovernoId(Long planoId);
 
-    boolean existsByNomeAndPlanoDeGovernoId(String nome, Long planoId);
+    boolean existsByTituloAndPlanoDeGovernoId(String titulo, Long planoId);
 
     /**
      * Usado nas rotas públicas: retorna apenas temas com o status informado

@@ -1,0 +1,26 @@
+PLANO DE GOVERNO
+================
+
+Candidato: Carlos Mendes
+Título: Plano de Governo 2025 — Carlos Mendes
+
+Apresentação:
+Educação de qualidade é a base de tudo. Proponho escolas em tempo integral, capacitação de professores e tecnologia para todos os alunos.
+
+TEMAS E PROPOSTAS
+=================
+
+Tema: Educação Integral
+Descrição: Escolas em tempo integral com reforço em ciências, artes e esportes.
+Propostas:
+  - Escola em tempo integral no Distrito Sul
+    Resumo: Converter duas escolas municipais para regime integral com alimentação e atividades extracurriculares.
+    Detalhamento: As unidades EMEF João XXIII e EMEF Jardim das Flores passarão por reforma. Previsão: 800 alunos atendidos.
+
+Tema: Tecnologia nas Escolas
+Descrição: Laboratórios de informática, internet de qualidade e formação digital.
+Propostas:
+  - Internet nas escolas municipais
+    Resumo: Instalar fibra óptica e wi-fi em todas as 32 escolas da rede municipal até dezembro de 2025.
+    Detalhamento: Licitação para link dedicado de 100 Mbps por unidade, com suporte técnico e treinamento para professores.
+

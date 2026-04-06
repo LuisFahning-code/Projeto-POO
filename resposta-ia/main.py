@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from google import genai
+from dotenv import load_dotenv
 
 load_dotenv()
 
