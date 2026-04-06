@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import br.com.vozdopovo.exception.base.BusinessException;
+import br.com.vozdopovo.exception.base.ContaInativaException;
 import br.com.vozdopovo.exception.base.ResourceNotFoundException;
+import br.com.vozdopovo.exception.base.ServiceUnavailableException;
 import br.com.vozdopovo.exception.base.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -114,7 +116,7 @@ public class GlobalExceptionHandler {
     }
 
     // -------------------------------------------------------
-    // 403 — Acesso negado
+    // 403 — Acesso negado pelo Spring Security (roles/permissões)
     // -------------------------------------------------------
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException ex,
@@ -124,6 +126,40 @@ public class GlobalExceptionHandler {
 
         problem.setType(URI.create("https://vozdopovo.com.br/errors/forbidden"));
         problem.setTitle("Acesso negado");
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
+
+        return problem;
+    }
+
+    // -------------------------------------------------------
+    // 403 — Conta inativa (domínio): usuário autenticado mas sem conta ativa
+    // -------------------------------------------------------
+    @ExceptionHandler(ContaInativaException.class)
+    public ProblemDetail handleContaInativa(ContaInativaException ex,
+                                            HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN, ex.getMessage());
+
+        problem.setType(URI.create("https://vozdopovo.com.br/errors/account-inactive"));
+        problem.setTitle("Conta inativa");
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("path", request.getRequestURI());
+
+        return problem;
+    }
+
+    // -------------------------------------------------------
+    // 503 — Serviço externo indisponível (ex.: API de IA)
+    // -------------------------------------------------------
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ProblemDetail handleServiceUnavailable(ServiceUnavailableException ex,
+                                                  HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+
+        problem.setType(URI.create("https://vozdopovo.com.br/errors/service-unavailable"));
+        problem.setTitle("Serviço indisponível");
         problem.setProperty("timestamp", Instant.now());
         problem.setProperty("path", request.getRequestURI());
 

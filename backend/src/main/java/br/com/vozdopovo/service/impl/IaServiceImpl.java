@@ -13,6 +13,7 @@ import br.com.vozdopovo.entity.Eleitor;
 import br.com.vozdopovo.entity.PlanoDeGoverno;
 import br.com.vozdopovo.enums.StatusConta;
 import br.com.vozdopovo.enums.StatusPublicacao;
+import br.com.vozdopovo.exception.eleitor.EleitorContaInativaException;
 import br.com.vozdopovo.exception.eleitor.EleitorNotFoundException;
 import br.com.vozdopovo.exception.ia.IaIndisponivel;
 import br.com.vozdopovo.exception.ia.PlanoSemArquivoTxtException;
@@ -42,14 +43,13 @@ public class IaServiceImpl implements IaService {
     @Override
     public PerguntaResponseDTO processarPergunta(PerguntaRequestDTO request, String emailEleitor) {
 
-        // MELHORIA #8: valida que o eleitor autenticado existe e está com conta ativa.
-        // Isso impede que tokens de contas desativadas consumam a API de IA,
-        // e garante um erro claro (404/422) em vez de um falso sucesso.
+        // Valida que o eleitor autenticado existe no banco
         Eleitor eleitor = eleitorRepository.findByEmail(emailEleitor)
                 .orElseThrow(() -> new EleitorNotFoundException(emailEleitor));
 
+        // Eleitor existe mas conta está inativa — 403, não 404
         if (eleitor.getStatus() != StatusConta.ATIVA) {
-            throw new EleitorNotFoundException(emailEleitor);
+            throw new EleitorContaInativaException(emailEleitor);
         }
 
         // Busca o plano do candidato no banco
@@ -57,14 +57,12 @@ public class IaServiceImpl implements IaService {
                 .findByCandidatoId(request.getCandidatoId())
                 .orElseThrow(() -> new PlanoDeGovernoNotFoundException(request.getCandidatoId()));
 
-        // MELHORIA #8: verifica se o plano está publicado.
-        // Sem isso, eleitores podiam fazer perguntas sobre rascunhos
-        // que o candidato ainda não tornou públicos.
+        // Plano existe mas não está publicado — eleitor não pode consultá-lo
         if (plano.getStatus() != StatusPublicacao.PUBLICADO) {
             throw new PlanoDeGovernoNotFoundException(request.getCandidatoId());
         }
 
-        // Verifica se o TXT já foi gerado
+        // TXT ainda não foi gerado para este plano
         if (plano.getCaminhoArquivoTxt() == null || plano.getCaminhoArquivoTxt().isBlank()) {
             throw new PlanoSemArquivoTxtException(request.getCandidatoId());
         }
