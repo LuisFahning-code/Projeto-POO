@@ -1,9 +1,12 @@
-from genai import Client
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from google import genai
+
+load_dotenv()
 
 # Conectar com a API do Gemini
-client = Client(api_key="AIzaSyAT9MgQlLmfo4RhBG38G7d7AYcn9HpDbpI")
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 app = FastAPI()
 
 # Definir as regras de negócio (falta combinar melhor com sousa)
@@ -17,8 +20,17 @@ class PedidoEleitor(BaseModel):
 
 async def responder_eleitor(pedido: PedidoEleitor):
 
+    caminho = pedido.caminho_txt
+    # Validação de segurança
+    diretorio_permitido = os.getenv("PLANOS_DIR", "/home/user/projeto/arquivos/planos")
+    if not os.path.abspath(caminho).startswith(os.path.abspath(diretorio_permitido)):
+        raise HTTPException(status_code=403, detail="Acesso negado ao caminho informado.")
+
+    if not os.path.exists(caminho):
+        raise HTTPException(status_code=404, detail="Arquivo TXT do plano não encontrado.")
+    
     # Abrir o arquivo com as propostas do candidato
-    with open(os.path.abspath(caminho_txt), "r", encoding="utf-8") as f:
+    with open(caminho, "r", encoding="utf-8") as f:
         plano = f.read()
 
     # Prompt que vai ser enviado

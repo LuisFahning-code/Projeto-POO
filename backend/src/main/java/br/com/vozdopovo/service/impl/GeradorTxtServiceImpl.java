@@ -43,7 +43,9 @@ public class GeradorTxtServiceImpl implements GeradorTxtService {
     public void gerarTxt(PlanoDeGoverno plano) {
         String conteudo = montarConteudo(plano);
         String nomeArquivo = "plano_" + plano.getCandidato().getId() + ".txt";
-        String caminho = diretorioBase + "/" + nomeArquivo;
+        String caminho = Paths.get(diretorioBase, nomeArquivo)
+                            .toAbsolutePath()
+                            .toString();
 
         salvarArquivo(caminho, conteudo);
 
