@@ -7,6 +7,7 @@ import br.com.vozdopovo.enums.StatusPublicacao;
 import br.com.vozdopovo.repository.PlanoDeGovernoRepository;
 import br.com.vozdopovo.repository.PropostaRepository;
 import br.com.vozdopovo.repository.TemaRepository;
+import br.com.vozdopovo.exception.gerador.GeradorTxtException;
 import br.com.vozdopovo.service.GeradorTxtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,9 +48,11 @@ public class GeradorTxtServiceImpl implements GeradorTxtService {
                             .toAbsolutePath()
                             .toString();
 
-        salvarArquivo(caminho, conteudo);
+        // salvarArquivo já lança GeradorTxtException em caso de falha de I/O
+        salvarArquivo(plano.getCandidato().getId(), caminho, conteudo);
 
-        // Atualiza o caminho no banco
+        // Atualiza o caminho no banco — único save aqui (quem chamou gerarTxt
+        // não precisa fazer save separado depois)
         plano.setNomeArquivoTxt(nomeArquivo);
         plano.setCaminhoArquivoTxt(caminho);
         plano.setUltimaAtualizacaoTxtEm(LocalDateTime.now());
@@ -119,14 +122,14 @@ public class GeradorTxtServiceImpl implements GeradorTxtService {
         return sb.toString();
     }
 
-    private void salvarArquivo(String caminho, String conteudo) {
+    private void salvarArquivo(Long candidatoId, String caminho, String conteudo) {
         try {
             Path path = Paths.get(caminho);
             // Cria o diretório se não existir
             Files.createDirectories(path.getParent());
             Files.writeString(path, conteudo, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar o arquivo TXT do plano de governo: " + e.getMessage());
+            throw new GeradorTxtException(candidatoId, e.getMessage());
         }
     }
 }

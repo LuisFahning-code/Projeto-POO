@@ -114,7 +114,9 @@ public class PlanoDeGovernoServiceImpl implements PlanoDeGovernoService {
             planoExistente.setDataAtualizacao(LocalDateTime.now());
 
             if (planoExistente.getStatus() == StatusPublicacao.PUBLICADO) {
+                // gerarTxt já faz o save do plano com o caminho atualizado
                 geradorTxtService.gerarTxt(planoExistente);
+                return planoExistente;
             }
         }
 
