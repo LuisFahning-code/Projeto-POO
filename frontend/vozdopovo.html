@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voz do Povo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+:root {
+  --ink: #0d1117;
+  --paper: #f5f0e8;
+  --cream: #faf7f2;
+  --gold: #c8973a;
+  --gold-light: #e6b84a;
+  --green: #1a6b3c;
+  --green-light: #2a8a50;
+  --red: #b83232;
+  --muted: #8a8070;
+  --border: #ddd5c4;
+  --card: #ffffff;
+  --shadow: 0 2px 20px rgba(13,17,23,0.08);
+  --shadow-hover: 0 8px 40px rgba(13,17,23,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ─── LAYOUT ─── */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ─── NAV ─── */
+nav {
+  background: var(--ink);
+  color: #fff;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 3px solid var(--gold);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.nav-logo span { color: var(--gold); }
+.nav-badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  background: var(--gold);
+  color: var(--ink);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+}
+.nav-role {
+  font-size: 0.65rem;
+  background: var(--green);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.nav-role.candidato { background: var(--gold); color: var(--ink); }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-primary { background: var(--gold); color: var(--ink); }
+.btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200,151,58,0.4); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { background: var(--green-light); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.2); }
+.btn-ghost:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
+.btn-outline:hover { border-color: var(--ink); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { opacity: 0.9; }
+.btn-sm { padding: 0.35rem 0.85rem; font-size: 0.8rem; }
+.btn-lg { padding: 0.75rem 1.75rem; font-size: 1rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* ─── PAGE WRAPPER ─── */
+.page { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.03em;
+}
+.page-subtitle { color: var(--muted); font-size: 1rem; margin-bottom: 2rem; }
+
+/* ─── HERO ─── */
+.hero {
+  background: var(--ink);
+  color: #fff;
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(26,107,60,0.3) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 30%, rgba(200,151,58,0.2) 0%, transparent 50%);
+}
+.hero-inner { position: relative; max-width: 780px; margin: 0 auto; }
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(200,151,58,0.4);
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.03em;
+}
+.hero h1 em { color: var(--gold); font-style: normal; }
+.hero p { font-size: 1.15rem; color: rgba(255,255,255,0.7); margin-bottom: 2.5rem; max-width: 520px; margin-left: auto; margin-right: auto; }
+.hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ─── CARDS ─── */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.25s;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--green));
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+.card:hover::before { opacity: 1; }
+.card-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--green));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+.card-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.2rem; }
+.card-meta { font-size: 0.8rem; color: var(--muted); display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.card-meta-item { display: flex; align-items: center; gap: 0.25rem; }
+.card-bio { font-size: 0.875rem; color: #555; line-height: 1.5; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card-footer { display: flex; justify-content: space-between; align-items: center; }
+
+/* ─── STATUS BADGES ─── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-green { background: #e8f5ee; color: var(--green); }
+.badge-gold { background: #fdf3e0; color: #9a6b1a; }
+.badge-gray { background: #f0ede8; color: var(--muted); }
+.badge-red { background: #fde8e8; color: var(--red); }
+.badge-blue { background: #e8edf5; color: #2a4a8a; }
+
+/* ─── FORMS ─── */
+.form-group { margin-bottom: 1.25rem; }
+.form-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--ink); }
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: var(--ink);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200,151,58,0.15);
+}
+.form-textarea { resize: vertical; min-height: 100px; }
+.form-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+.form-error { font-size: 0.8rem; color: var(--red); margin-top: 0.3rem; }
+
+/* ─── AUTH ─── */
+.auth-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: var(--cream);
+}
+.auth-box {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+}
+.auth-logo { text-align: center; margin-bottom: 2rem; }
+.auth-logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--ink);
+}
+.auth-logo-text span { color: var(--gold); }
+.auth-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.3rem; }
+.auth-subtitle { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.75rem; }
+.auth-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.75rem; gap: 0; }
+.auth-tab {
+  flex: 1;
+  padding: 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  color: var(--muted);
+  transition: all 0.2s;
+}
+.auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.auth-switch { text-align: center; margin-top: 1.25rem; font-size: 0.875rem; color: var(--muted); }
+.auth-switch a { color: var(--gold); font-weight: 600; cursor: pointer; text-decoration: none; }
+
+/* ─── SECTION ─── */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.section-line {
+  width: 40px;
+  height: 3px;
+  background: var(--gold);
+  margin-bottom: 0.75rem;
+}
+
+/* ─── CANDIDATE PROFILE ─── */
+.profile-header {
+  background: var(--ink);
+  color: #fff;
+  padding: 3rem 0 0;
+}
+.profile-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2.5rem;
+}
+.profile-top { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; }
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--green));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  flex-shrink: 0;
+  border: 3px solid rgba(255,255,255,0.2);
+}
+.profile-info { flex: 1; min-width: 200px; }
+.profile-name { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; margin-bottom: 0.4rem; }
+.profile-details { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.profile-detail { font-size: 0.85rem; color: rgba(255,255,255,0.65); display: flex; align-items: center; gap: 0.35rem; }
+.profile-bio { font-size: 0.95rem; color: rgba(255,255,255,0.75); max-width: 600px; line-height: 1.6; }
+.profile-tabs {
+  display: flex;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: 2rem;
+}
+.profile-tab {
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: rgba(255,255,255,0.55);
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+.profile-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.profile-tab:hover:not(.active) { color: rgba(255,255,255,0.85); }
+
+/* ─── PLAN ─── */
+.plan-section { margin-bottom: 2.5rem; }
+.plan-apresentacao {
+  background: linear-gradient(135deg, var(--ink), #1a2a40);
+  color: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  border-left: 4px solid var(--gold);
+  margin-bottom: 2rem;
+}
+.tema-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
+.tema-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+.tema-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--gold), var(--green));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.tema-title { font-weight: 700; font-size: 1rem; flex: 1; }
+.tema-desc { font-size: 0.85rem; color: var(--muted); }
+.tema-chevron { color: var(--muted); font-size: 1.1rem; transition: transform 0.2s; }
+.tema-chevron.open { transform: rotate(180deg); }
+.tema-body { padding: 0 1.5rem 1.5rem; border-top: 1px solid var(--border); }
+.proposta-item {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.proposta-item:last-child { border-bottom: none; }
+.proposta-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.4rem; }
+.proposta-resumo { font-size: 0.875rem; color: #555; line-height: 1.5; }
+.proposta-detail { font-size: 0.825rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.5; display: none; }
+.proposta-item.expanded .proposta-detail { display: block; }
+
+/* ─── AI CHAT ─── */
+.chat-container {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.chat-header {
+  background: var(--ink);
+  color: #fff;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.chat-ai-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--green-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+.chat-header-info { flex: 1; }
+.chat-header-title { font-weight: 700; font-size: 0.95rem; }
+.chat-header-sub { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+.chat-messages {
+  height: 380px;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: var(--cream);
+}
+.chat-msg {
+  max-width: 78%;
+  animation: fadeUp 0.3s ease;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.chat-msg.user { align-self: flex-end; }
+.chat-msg.ai { align-self: flex-start; }
+.chat-bubble {
+  padding: 0.85rem 1.1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.chat-msg.user .chat-bubble {
+  background: var(--ink);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.chat-msg.ai .chat-bubble {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+  color: var(--ink);
+}
+.chat-bubble.thinking { color: var(--muted); font-style: italic; }
+.typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+.typing-dots span {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--muted);
+  animation: bounce 1.2s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+.chat-form {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+.chat-input {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--gold); }
+.chat-send {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.chat-send:hover { background: var(--gold-light); transform: scale(1.05); }
+.chat-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ─── INTERAÇÕES ─── */
+.interacao-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s;
+}
+.interacao-card:hover { box-shadow: var(--shadow); }
+.interacao-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+.interacao-title { font-weight: 700; font-size: 1rem; }
+.interacao-meta { font-size: 0.8rem; color: var(--muted); display: flex; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.interacao-conteudo { font-size: 0.9rem; line-height: 1.6; color: #444; background: var(--cream); padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem; }
+.interacao-resposta { font-size: 0.875rem; line-height: 1.6; color: var(--green); background: #e8f5ee; padding: 1rem; border-radius: 8px; border-left: 3px solid var(--green); }
+.interacao-resposta-label { font-size: 0.75rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+.responder-form { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+/* ─── DASHBOARD ─── */
+.dashboard-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: start; }
+.dashboard-nav {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  position: sticky;
+  top: 80px;
+}
+.dash-nav-item {
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #555;
+  border-left: 3px solid transparent;
+  transition: all 0.18s;
+}
+.dash-nav-item:hover { background: var(--cream); color: var(--ink); }
+.dash-nav-item.active { background: #fdf3e0; color: #9a6b1a; border-left-color: var(--gold); font-weight: 600; }
+.dash-nav-item .nav-icon { font-size: 1.1rem; }
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-box {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.stat-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+
+/* ─── ALERTS ─── */
+.alert {
+  padding: 0.85rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.alert-success { background: #e8f5ee; color: var(--green); border: 1px solid #c0e0cc; }
+.alert-error { background: #fde8e8; color: var(--red); border: 1px solid #f0c0c0; }
+.alert-info { background: #e8edf5; color: #2a4a8a; border: 1px solid #c0cce0; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,17,23,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from{opacity:0}to{opacity:1} }
+.modal-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; }
+.modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); line-height: 1; padding: 4px; }
+.modal-close:hover { color: var(--ink); }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted);
+}
+.empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+.empty-title { font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 0.5rem; }
+.empty-sub { font-size: 0.9rem; }
+
+/* ─── SEARCH ─── */
+.search-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.65rem 1rem 0.65rem 2.6rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  background: #fff;
+  position: relative;
+}
+.search-wrapper { position: relative; flex: 1; min-width: 200px; }
+.search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1rem; pointer-events: none; }
+.search-input:focus { outline: none; border-color: var(--gold); }
+
+/* ─── BREADCRUMB ─── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--gold); cursor: pointer; font-weight: 500; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--border); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-nav { position: static; }
+  .profile-top { flex-direction: column; }
+  nav { padding: 0 1rem; }
+  .hero { padding: 3rem 1rem 2.5rem; }
+  .page { padding: 1.5rem 1rem; }
+}
+
+/* ─── UTILITIES ─── */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.text-muted { color: var(--muted); }
+.text-sm { font-size: 0.85rem; }
+.font-bold { font-weight: 700; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.w-full { width: 100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const API = 'http://localhost:8080';
+
+// ─── API HELPERS ───
+async function apiFetch(path, opts = {}, token = null) {
+  const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  try {
+    const res = await fetch(API + path, { ...opts, headers });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = text; }
+    if (!res.ok) throw { status: res.status, message: data?.detail || data?.message || 'Erro na requisição' };
+    return data;
+  } catch (e) {
+    if (e.status) throw e;
+    throw { status: 0, message: 'Servidor indisponível. Verifique se o backend está rodando.' };
+  }
+}
+
+// ─── ICONS (SVG inline) ───
+const Icon = ({ name, size = 16 }) => {
+  const icons = {
+    user: '👤', party: '🏛️', map: '📍', book: '📋', chat: '💬', send: '➤',
+    check: '✓', x: '✕', plus: '＋', edit: '✏️', trash: '🗑️', eye: '👁️',
+    logout: '↩', home: '🏠', settings: '⚙️', star: '★', arrow: '›',
+    search: '🔍', bell: '🔔', ai: '✨', lock: '🔒', mail: '✉️',
+    vote: '🗳️', shield: '🛡️', list: '☰', chevron: '▼', back: '←',
+    stats: '📊', people: '👥', msg: '💬', plan: '📄', theme: '🏷️'
+  };
+  return <span style={{ fontSize: size }}>{icons[name] || '•'}</span>;
+};
+
+// ─── STATUS HELPERS ───
+const statusBadge = (status) => {
+  const map = {
+    ATIVA: ['badge-green', 'Ativa'],
+    DESATIVADA: ['badge-red', 'Desativada'],
+    PUBLICADO: ['badge-green', 'Publicado'],
+    RASCUNHO: ['badge-gold', 'Rascunho'],
+    ARQUIVADO: ['badge-gray', 'Arquivado'],
+    RECEBIDA: ['badge-blue', 'Recebida'],
+    EM_ANALISE: ['badge-gold', 'Em Análise'],
+    RESPONDIDA: ['badge-green', 'Respondida'],
+    FINALIZADA: ['badge-gray', 'Finalizada'],
+    AGUARDANDO_CONFIRMACAO: ['badge-blue', 'Aguardando'],
+    DUVIDA: ['badge-blue', 'Dúvida'],
+    DEMANDA: ['badge-gold', 'Demanda'],
+  };
+  const [cls, label] = map[status] || ['badge-gray', status];
+  return <span className={`badge ${cls}`}>{label}</span>;
+};
+
+const initials = (name = '') => name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+const fmtDate = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+
+// ─── TOAST ───
+function Toast({ msg, type, onClose }) {
+  useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, []);
+  return (
+    <div style={{ position:'fixed', bottom:'1.5rem', right:'1.5rem', zIndex:500, animation:'fadeUp 0.3s ease' }}>
+      <div className={`alert alert-${type}`} style={{ minWidth:260, maxWidth:380, boxShadow:'0 8px 30px rgba(0,0,0,0.15)' }}>
+        {msg}
+        <button onClick={onClose} style={{ background:'none',border:'none',cursor:'pointer',marginLeft:'auto',fontSize:'1rem' }}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN APP ───
+function App() {
+  const [session, setSession] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('vdp_session') || 'null'); } catch { return null; }
+  });
+  const [view, setView] = useState('home');
+  const [viewData, setViewData] = useState({});
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg, type = 'success') => setToast({ msg, type });
+
+  const navigate = (v, data = {}) => {
+    setView(v);
+    setViewData(data);
+    window.scrollTo(0, 0);
+  };
+
+  const login = (sessionData) => {
+    setSession(sessionData);
+    localStorage.setItem('vdp_session', JSON.stringify(sessionData));
+    navigate(sessionData.role === 'CANDIDATO' ? 'dashboard' : 'home');
+    showToast(`Bem-vindo(a), ${sessionData.nome}!`);
+  };
+
+  const logout = () => {
+    setSession(null);
+    localStorage.removeItem('vdp_session');
+    navigate('home');
+    showToast('Sessão encerrada.', 'info');
+  };
+
+  const ctx = { session, navigate, showToast, logout };
+
+  const renderView = () => {
+    switch (view) {
+      case 'auth': return <AuthPage onLogin={login} navigate={navigate} />;
+      case 'home': return <HomePage ctx={ctx} />;
+      case 'candidates': return <CandidatesPage ctx={ctx} />;
+      case 'candidate': return <CandidatePage ctx={ctx} data={viewData} />;
+      case 'dashboard': return <DashboardPage ctx={ctx} />;
+      case 'interactions': return <InteracoesPage ctx={ctx} />;
+      default: return <HomePage ctx={ctx} />;
+    }
+  };
+
+  return (
+    <div className="app">
+      <NavBar session={session} navigate={navigate} logout={logout} />
+      {renderView()}
+      {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
+    </div>
+  );
+}
+
+// ─── NAVBAR ───
+function NavBar({ session, navigate, logout }) {
+  return (
+    <nav>
+      <div className="nav-brand" onClick={() => navigate('home')}>
+        <span className="nav-logo">Voz<span>do</span>Povo</span>
+        <span className="nav-badge">Beta</span>
+      </div>
+      <div className="nav-right">
+        {session ? (
+          <>
+            <span className="nav-user">
+              {session.nome.split(' ')[0]}
+              <span className={`nav-role ${session.role.toLowerCase()}`}>{session.role === 'CANDIDATO' ? 'Candidato' : 'Eleitor'}</span>
+            </span>
+            {session.role === 'ELEITOR' && (
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('interactions')}>Minhas Interações</button>
+            )}
+            {session.role === 'CANDIDATO' && (
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('dashboard')}>Painel</button>
+            )}
+            <button className="btn btn-ghost btn-sm" onClick={logout}><Icon name="logout" size={14}/> Sair</button>
+          </>
+        ) : (
+          <>
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('candidates')}>Candidatos</button>
+            <button className="btn btn-primary btn-sm" onClick={() => navigate('auth')}>Entrar</button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// ─── AUTH PAGE ───
+function AuthPage({ onLogin, navigate }) {
+  const [mode, setMode] = useState('login');
+  const [role, setRole] = useState('ELEITOR');
+  const [form, setForm] = useState({ nome:'', email:'', senha:'', partido:'', cargo:'', biografia:'' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const submit = async () => {
+    setError(''); setLoading(true);
+    try {
+      if (mode === 'login') {
+        const data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email: form.email, senha: form.senha }) });
+        onLogin({ token: data.token, role: data.role, id: data.id, nome: data.nome });
+      } else {
+        const endpoint = role === 'CANDIDATO' ? '/candidatos' : '/eleitores';
+        const body = role === 'CANDIDATO'
+          ? { nome: form.nome, email: form.email, senha: form.senha, partido: form.partido, cargo: form.cargo, biografia: form.biografia }
+          : { nome: form.nome, email: form.email, senha: form.senha };
+        await apiFetch(endpoint, { method: 'POST', body: JSON.stringify(body) });
+        const data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email: form.email, senha: form.senha }) });
+        onLogin({ token: data.token, role: data.role, id: data.id, nome: data.nome });
+      }
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-wrapper">
+      <div className="auth-box">
+        <div className="auth-logo">
+          <div className="auth-logo-text">Voz<span>do</span>Povo</div>
+        </div>
+        <div className="auth-tabs">
+          <div className={`auth-tab ${mode === 'login' ? 'active' : ''}`} onClick={() => { setMode('login'); setError(''); }}>Entrar</div>
+          <div className={`auth-tab ${mode === 'register' ? 'active' : ''}`} onClick={() => { setMode('register'); setError(''); }}>Criar conta</div>
+        </div>
+
+        {mode === 'register' && (
+          <div className="form-group">
+            <label className="form-label">Você é:</label>
+            <div style={{ display:'flex', gap:'0.75rem' }}>
+              {['ELEITOR','CANDIDATO'].map(r => (
+                <label key={r} style={{ flex:1, display:'flex', alignItems:'center', gap:'0.4rem', padding:'0.65rem', border:`1.5px solid ${role===r ? 'var(--gold)' : 'var(--border)'}`, borderRadius:8, cursor:'pointer', background: role===r ? '#fdf3e0' : '#fff', fontSize:'0.875rem', fontWeight:600 }}>
+                  <input type="radio" name="role" value={r} checked={role===r} onChange={() => setRole(r)} style={{accentColor:'var(--gold)'}} />
+                  {r === 'ELEITOR' ? '🗳️ Eleitor' : '🏛️ Candidato'}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {mode === 'register' && (
+          <div className="form-group">
+            <label className="form-label">Nome completo</label>
+            <input className="form-input" value={form.nome} onChange={set('nome')} placeholder="Seu nome" />
+          </div>
+        )}
+
+        <div className="form-group">
+          <label className="form-label">E-mail</label>
+          <input className="form-input" type="email" value={form.email} onChange={set('email')} placeholder="seu@email.com" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Senha</label>
+          <input className="form-input" type="password" value={form.senha} onChange={set('senha')} placeholder="••••••••" />
+        </div>
+
+        {mode === 'register' && role === 'CANDIDATO' && (
+          <>
+            <div className="form-group">
+              <label className="form-label">Partido</label>
+              <input className="form-input" value={form.partido} onChange={set('partido')} placeholder="Ex: Partido da Renovação Nacional" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Cargo</label>
+              <input className="form-input" value={form.cargo} onChange={set('cargo')} placeholder="Ex: Prefeito, Vereador..." />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Biografia <span style={{color:'var(--muted)',fontSize:'0.8rem'}}>(opcional)</span></label>
+              <textarea className="form-textarea" value={form.biografia} onChange={set('biografia')} placeholder="Conte um pouco sobre você..." rows={3} />
+            </div>
+          </>
+        )}
+
+        {error && <div className="alert alert-error">{error}</div>}
+
+        <button className="btn btn-primary w-full btn-lg" onClick={submit} disabled={loading}>
+          {loading ? 'Aguarde...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
+        </button>
+
+        {mode === 'login' && (
+          <div className="auth-switch" style={{marginTop:'1rem'}}>
+            <small style={{color:'var(--muted)'}}>Teste: ana.souza@email.com / senha123</small>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── HOME PAGE ───
+function HomePage({ ctx }) {
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiFetch('/candidatos/ativos').then(d => { setCandidates(d); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  return (
+    <>
+      <div className="hero">
+        <div className="hero-inner">
+          <div className="hero-eyebrow">Plataforma Democrática</div>
+          <h1>A <em>voz</em> que faz a diferença nas eleições</h1>
+          <p>Conheça os candidatos, explore planos de governo e tire dúvidas com inteligência artificial.</p>
+          <div className="hero-actions">
+            <button className="btn btn-primary btn-lg" onClick={() => ctx.navigate('candidates')}>Ver Candidatos</button>
+            {!ctx.session && (
+              <button className="btn btn-ghost btn-lg" onClick={() => ctx.navigate('auth')}>Criar conta grátis</button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="page">
+        <div className="section-header">
+          <div>
+            <div className="section-line" />
+            <h2 className="section-title">Candidatos em destaque</h2>
+          </div>
+          <button className="btn btn-outline" onClick={() => ctx.navigate('candidates')}>Ver todos →</button>
+        </div>
+
+        {loading ? (
+          <div className="empty-state"><div className="empty-icon">⏳</div><p>Carregando candidatos...</p></div>
+        ) : candidates.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🏛️</div>
+            <div className="empty-title">Nenhum candidato cadastrado</div>
+            <div className="empty-sub">O backend pode estar offline. Verifique a conexão.</div>
+          </div>
+        ) : (
+          <div className="cards-grid">
+            {candidates.slice(0, 6).map(c => (
+              <CandidateCard key={c.id} candidate={c} onClick={() => ctx.navigate('candidate', { id: c.id })} />
+            ))}
+          </div>
+        )}
+
+        <div style={{ marginTop:'4rem', display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:'1.5rem' }}>
+          {[
+            { icon:'📋', title:'Planos detalhados', desc:'Acesse os planos de governo completos de cada candidato.' },
+            { icon:'✨', title:'IA para tirar dúvidas', desc:'Pergunte sobre propostas e receba respostas baseadas nos planos.' },
+            { icon:'💬', title:'Interação direta', desc:'Envie dúvidas e demandas diretamente aos candidatos.' },
+          ].map(f => (
+            <div key={f.title} style={{ background:'#fff', border:'1px solid var(--border)', borderRadius:12, padding:'1.5rem', textAlign:'center' }}>
+              <div style={{ fontSize:'2rem', marginBottom:'0.75rem' }}>{f.icon}</div>
+              <div style={{ fontWeight:700, marginBottom:'0.4rem' }}>{f.title}</div>
+              <div style={{ fontSize:'0.875rem', color:'var(--muted)' }}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CandidateCard({ candidate, onClick }) {
+  return (
+    <div className="card" onClick={onClick}>
+      <div className="flex items-center gap-2" style={{ marginBottom:'1rem' }}>
+        <div className="card-avatar">{initials(candidate.nome)}</div>
+        <div>
+          <div className="card-name">{candidate.nome}</div>
+          <div style={{ fontSize:'0.78rem', color:'var(--muted)' }}>{candidate.cargo}</div>
+        </div>
+      </div>
+      <div className="card-meta">
+        <span className="card-meta-item"><Icon name="party" size={12}/>{candidate.partido}</span>
+      </div>
+      {candidate.biografia && <div className="card-bio">{candidate.biografia}</div>}
+      <div className="card-footer">
+        <span className="badge badge-green">Ativo</span>
+        <span style={{ fontSize:'0.8rem', color:'var(--gold)', fontWeight:600 }}>Ver perfil →</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── CANDIDATES PAGE ───
+function CandidatesPage({ ctx }) {
+  const [candidates, setCandidates] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const fetchCandidates = async (q) => {
+    setLoading(true);
+    try {
+      const path = q ? `/candidatos/buscar?nome=${encodeURIComponent(q)}` : '/candidatos/ativos';
+      const data = await apiFetch(path);
+      setCandidates(data);
+    } catch { setCandidates([]); }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchCandidates(''); }, []);
+
+  const handleSearch = (e) => {
+    const v = e.target.value;
+    setSearch(v);
+    clearTimeout(window._st);
+    window._st = setTimeout(() => fetchCandidates(v), 400);
+  };
+
+  return (
+    <div className="page">
+      <div className="breadcrumb">
+        <a onClick={() => ctx.navigate('home')}>Início</a>
+        <span className="breadcrumb-sep">›</span>
+        <span>Candidatos</span>
+      </div>
+      <div className="page-title">Candidatos</div>
+      <div className="page-subtitle">Explore os candidatos registrados na plataforma</div>
+
+      <div className="search-bar">
+        <div className="search-wrapper">
+          <span className="search-icon">🔍</span>
+          <input className="form-input search-input" value={search} onChange={handleSearch} placeholder="Buscar por nome..." style={{ paddingLeft:'2.5rem' }} />
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="empty-state"><div className="empty-icon">⏳</div><p>Buscando candidatos...</p></div>
+      ) : candidates.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">🏛️</div>
+          <div className="empty-title">Nenhum candidato encontrado</div>
+          <div className="empty-sub">Tente outro termo de busca.</div>
+        </div>
+      ) : (
+        <div className="cards-grid">
+          {candidates.map(c => <CandidateCard key={c.id} candidate={c} onClick={() => ctx.navigate('candidate', { id: c.id })} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── CANDIDATE PROFILE ───
+function CandidatePage({ ctx, data }) {
+  const [candidate, setCandidate] = useState(null);
+  const [plan, setPlan] = useState(null);
+  const [temas, setTemas] = useState([]);
+  const [tab, setTab] = useState('plano');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const c = await apiFetch(`/candidatos/${data.id}`);
+        setCandidate(c);
+        try {
+          const p = await apiFetch(`/planos-de-governo/candidato/${data.id}`);
+          setPlan(p);
+          if (p?.id) {
+            const t = await apiFetch(`/temas/plano/${p.id}`);
+            const temasComPropostas = await Promise.all(t.map(async tema => {
+              const props = await apiFetch(`/propostas/tema/${tema.id}`).catch(() => []);
+              return { ...tema, propostas: props };
+            }));
+            setTemas(temasComPropostas);
+          }
+        } catch {}
+      } catch { ctx.showToast('Candidato não encontrado.', 'error'); ctx.navigate('candidates'); }
+      setLoading(false);
+    })();
+  }, [data.id]);
+
+  if (loading) return <div className="empty-state" style={{paddingTop:'4rem'}}><div className="empty-icon">⏳</div><p>Carregando perfil...</p></div>;
+  if (!candidate) return null;
+
+  return (
+    <>
+      <div className="profile-header">
+        <div className="profile-header-inner">
+          <div className="breadcrumb" style={{ color:'rgba(255,255,255,0.5)', marginBottom:'1.5rem' }}>
+            <a onClick={() => ctx.navigate('home')} style={{ color:'rgba(255,255,255,0.6)' }}>Início</a>
+            <span className="breadcrumb-sep">›</span>
+            <a onClick={() => ctx.navigate('candidates')} style={{ color:'rgba(255,255,255,0.6)' }}>Candidatos</a>
+            <span className="breadcrumb-sep">›</span>
+            <span style={{ color:'rgba(255,255,255,0.8)' }}>{candidate.nome}</span>
+          </div>
+          <div className="profile-top">
+            <div className="profile-avatar">{initials(candidate.nome)}</div>
+            <div className="profile-info">
+              <div className="profile-name">{candidate.nome}</div>
+              <div className="profile-details">
+                <span className="profile-detail"><Icon name="party" size={13}/>{candidate.partido}</span>
+                <span className="profile-detail"><Icon name="map" size={13}/>{candidate.cargo}</span>
+                <span className="profile-detail"><Icon name="mail" size={13}/>{candidate.email}</span>
+              </div>
+              {candidate.biografia && <div className="profile-bio">{candidate.biografia}</div>}
+            </div>
+          </div>
+          <div className="profile-tabs">
+            {[['plano','📄 Plano de Governo'],['perguntar','✨ Perguntar à IA'],['interagir','💬 Interagir']].map(([t,label]) => (
+              <div key={t} className={`profile-tab ${tab===t?'active':''}`} onClick={() => setTab(t)}>{label}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="page">
+        {tab === 'plano' && <PlanTab plan={plan} temas={temas} />}
+        {tab === 'perguntar' && <AIChat candidato={candidate} ctx={ctx} />}
+        {tab === 'interagir' && <InteragirTab candidato={candidate} ctx={ctx} />}
+      </div>
+    </>
+  );
+}
+
+function PlanTab({ plan, temas }) {
+  const [open, setOpen] = useState({});
+  const [expanded, setExpanded] = useState({});
+
+  if (!plan) return (
+    <div className="empty-state">
+      <div className="empty-icon">📄</div>
+      <div className="empty-title">Plano não publicado</div>
+      <div className="empty-sub">Este candidato ainda não publicou seu plano de governo.</div>
+    </div>
+  );
+
+  return (
+    <div className="plan-section">
+      <h2 style={{ fontFamily:'Playfair Display,serif', fontSize:'1.8rem', fontWeight:900, marginBottom:'1.5rem' }}>{plan.titulo}</h2>
+      {plan.apresentacao && <div className="plan-apresentacao">{plan.apresentacao}</div>}
+
+      {temas.length === 0 ? (
+        <div className="empty-state"><div className="empty-icon">🏷️</div><div className="empty-title">Nenhum tema publicado ainda</div></div>
+      ) : (
+        temas.map((tema, i) => (
+          <div key={tema.id} className="tema-card">
+            <div className="tema-header" onClick={() => setOpen(o => ({ ...o, [tema.id]: !o[tema.id] }))}>
+              <div className="tema-icon">{['🚌','💧','📚','💻','🏥','🌳','🔒','💡'][i % 8]}</div>
+              <div style={{ flex:1 }}>
+                <div className="tema-title">{tema.titulo}</div>
+                {tema.descricao && <div className="tema-desc">{tema.descricao}</div>}
+              </div>
+              <span className="badge badge-gold">{tema.propostas?.length || 0} propostas</span>
+              <span className={`tema-chevron ${open[tema.id] ? 'open' : ''}`}>▼</span>
+            </div>
+            {open[tema.id] && (
+              <div className="tema-body">
+                {(tema.propostas || []).length === 0 ? (
+                  <p style={{ color:'var(--muted)', fontSize:'0.875rem', padding:'1rem 0' }}>Nenhuma proposta publicada neste tema.</p>
+                ) : (tema.propostas || []).map(p => (
+                  <div key={p.id} className={`proposta-item ${expanded[p.id] ? 'expanded' : ''}`}>
+                    <div className="proposta-title">{p.titulo}</div>
+                    <div className="proposta-resumo">{p.resumo}</div>
+                    {p.detalhamento && (
+                      <>
+                        <div className="proposta-detail">{p.detalhamento}</div>
+                        <button style={{ background:'none', border:'none', color:'var(--gold)', fontSize:'0.8rem', cursor:'pointer', fontWeight:600, marginTop:'0.4rem' }}
+                          onClick={() => setExpanded(e => ({ ...e, [p.id]: !e[p.id] }))}>
+                          {expanded[p.id] ? 'Ver menos ▲' : 'Ver mais ▼'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function AIChat({ candidato, ctx }) {
+  const [msgs, setMsgs] = useState([{ role:'ai', text:`Olá! Sou o assistente do(a) ${candidato.nome}. Posso responder perguntas sobre o plano de governo dele(a). O que você gostaria de saber?` }]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef();
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:'smooth' }); }, [msgs]);
+
+  const send = async () => {
+    if (!input.trim() || loading) return;
+    if (!ctx.session || ctx.session.role !== 'ELEITOR') {
+      ctx.showToast('Faça login como eleitor para usar o chat.', 'error');
+      return;
+    }
+
+    const question = input.trim();
+    setInput('');
+    setMsgs(m => [...m, { role:'user', text: question }, { role:'ai', text:'...', thinking:true }]);
+    setLoading(true);
+
+    try {
+      const resp = await apiFetch('/ia/perguntar', {
+        method:'POST',
+        body: JSON.stringify({ candidatoId: candidato.id, pergunta: question })
+      }, ctx.session.token);
+      setMsgs(m => [...m.slice(0, -1), { role:'ai', text: resp.resposta }]);
+    } catch (e) {
+      setMsgs(m => [...m.slice(0, -1), { role:'ai', text:`Não foi possível obter resposta: ${e.message}` }]);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      <div className="section-line" />
+      <div className="section-title" style={{ fontFamily:'Playfair Display,serif', marginBottom:'1rem' }}>✨ Perguntar à IA</div>
+      <p style={{ color:'var(--muted)', fontSize:'0.875rem', marginBottom:'1.5rem' }}>
+        Faça perguntas sobre as propostas de {candidato.nome} e receba respostas baseadas no plano de governo.
+        {!ctx.session && <> <a onClick={() => ctx.navigate('auth')} style={{ color:'var(--gold)', cursor:'pointer', fontWeight:600 }}> Faça login</a> para interagir.</>}
+      </p>
+      <div className="chat-container">
+        <div className="chat-header">
+          <div className="chat-ai-icon">✨</div>
+          <div className="chat-header-info">
+            <div className="chat-header-title">Assistente de {candidato.nome}</div>
+            <div className="chat-header-sub">Pergunte sobre o plano de governo</div>
+          </div>
+          <span className="badge badge-green" style={{ fontSize:'0.65rem' }}>● Online</span>
+        </div>
+        <div className="chat-messages">
+          {msgs.map((m, i) => (
+            <div key={i} className={`chat-msg ${m.role}`}>
+              <div className={`chat-bubble ${m.thinking ? 'thinking' : ''}`}>
+                {m.thinking ? <div className="typing-dots"><span/><span/><span/></div> : m.text}
+              </div>
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
+        <div className="chat-form">
+          <input
+            className="chat-input"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && send()}
+            placeholder={ctx.session?.role === 'ELEITOR' ? 'Digite sua pergunta...' : 'Faça login como eleitor para perguntar'}
+            disabled={!ctx.session || ctx.session.role !== 'ELEITOR' || loading}
+          />
+          <button className="chat-send" onClick={send} disabled={!input.trim() || loading || !ctx.session || ctx.session.role !== 'ELEITOR'}>
+            ➤
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InteragirTab({ candidato, ctx }) {
+  const [form, setForm] = useState({ titulo:'', conteudo:'', tipo:'DUVIDA', urlComprovacao:'' });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const submit = async () => {
+    if (!ctx.session) { ctx.navigate('auth'); return; }
+    if (ctx.session.role !== 'ELEITOR') { ctx.showToast('Apenas eleitores podem enviar interações.', 'error'); return; }
+    setLoading(true);
+    try {
+      await apiFetch(`/interacoes/eleitor/${ctx.session.id}/candidato/${candidato.id}`, {
+        method:'POST', body: JSON.stringify(form)
+      }, ctx.session.token);
+      setSuccess(true);
+      ctx.showToast('Interação enviada com sucesso!');
+      setForm({ titulo:'', conteudo:'', tipo:'DUVIDA', urlComprovacao:'' });
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+    setLoading(false);
+  };
+
+  if (!ctx.session) return (
+    <div className="empty-state">
+      <div className="empty-icon">🔒</div>
+      <div className="empty-title">Login necessário</div>
+      <div className="empty-sub"><button className="btn btn-primary mt-2" onClick={() => ctx.navigate('auth')}>Fazer login</button></div>
+    </div>
+  );
+
+  return (
+    <div style={{ maxWidth:620 }}>
+      <div className="section-line" />
+      <div className="section-title" style={{ fontFamily:'Playfair Display,serif', marginBottom:'1rem' }}>💬 Enviar Interação</div>
+      <p style={{ color:'var(--muted)', fontSize:'0.875rem', marginBottom:'1.5rem' }}>Envie dúvidas ou demandas diretamente para {candidato.nome}.</p>
+
+      {success && <div className="alert alert-success">✓ Interação enviada! Você pode acompanhar as respostas em "Minhas Interações".</div>}
+
+      <div className="form-group">
+        <label className="form-label">Tipo</label>
+        <select className="form-select" value={form.tipo} onChange={set('tipo')}>
+          <option value="DUVIDA">❓ Dúvida</option>
+          <option value="DEMANDA">📢 Demanda</option>
+        </select>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Título <span style={{ color:'var(--muted)', fontSize:'0.8rem' }}>(opcional)</span></label>
+        <input className="form-input" value={form.titulo} onChange={set('titulo')} placeholder="Resumo da sua mensagem" maxLength={150} />
+      </div>
+      <div className="form-group">
+        <label className="form-label">Mensagem</label>
+        <textarea className="form-textarea" value={form.conteudo} onChange={set('conteudo')} placeholder="Descreva sua dúvida ou demanda em detalhes..." rows={5} />
+      </div>
+      <div className="form-group">
+        <label className="form-label">URL de comprovação <span style={{ color:'var(--muted)', fontSize:'0.8rem' }}>(opcional)</span></label>
+        <input className="form-input" value={form.urlComprovacao} onChange={set('urlComprovacao')} placeholder="https://..." />
+      </div>
+      <button className="btn btn-green btn-lg" onClick={submit} disabled={loading || !form.conteudo.trim()}>
+        {loading ? 'Enviando...' : '📨 Enviar interação'}
+      </button>
+    </div>
+  );
+}
+
+// ─── INTERAÇÕES PAGE (ELEITOR) ───
+function InteracoesPage({ ctx }) {
+  const [interacoes, setInteracoes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    if (!ctx.session) { ctx.navigate('auth'); return; }
+    apiFetch(`/interacoes/eleitor/${ctx.session.id}`, {}, ctx.session.token)
+      .then(d => { setInteracoes(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filtered = filter ? interacoes.filter(i => i.status === filter || i.tipo === filter) : interacoes;
+
+  return (
+    <div className="page">
+      <div className="breadcrumb">
+        <a onClick={() => ctx.navigate('home')}>Início</a>
+        <span className="breadcrumb-sep">›</span>
+        <span>Minhas Interações</span>
+      </div>
+      <div className="page-title">Minhas Interações</div>
+      <div className="page-subtitle">Acompanhe suas dúvidas e demandas enviadas aos candidatos</div>
+
+      <div style={{ display:'flex', gap:'0.5rem', marginBottom:'1.5rem', flexWrap:'wrap' }}>
+        {['','DUVIDA','DEMANDA','RECEBIDA','RESPONDIDA','FINALIZADA'].map(f => (
+          <button key={f} className={`btn btn-sm ${filter===f ? 'btn-primary' : 'btn-outline'}`} onClick={() => setFilter(f)}>
+            {f || 'Todas'}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="empty-state"><div className="empty-icon">⏳</div><p>Carregando...</p></div>
+      ) : filtered.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">💬</div>
+          <div className="empty-title">Nenhuma interação encontrada</div>
+          <div className="empty-sub">Explore os candidatos e envie suas dúvidas!</div>
+          <button className="btn btn-primary mt-2" onClick={() => ctx.navigate('candidates')}>Ver candidatos</button>
+        </div>
+      ) : filtered.map(i => (
+        <div key={i.id} className="interacao-card">
+          <div className="interacao-header">
+            <div className="interacao-title">{i.titulo || '(sem título)'}</div>
+            <div style={{ display:'flex', gap:'0.4rem' }}>{statusBadge(i.tipo)}{statusBadge(i.status)}</div>
+          </div>
+          <div className="interacao-meta">
+            <span>Candidato #{i.candidatoId}</span>
+            <span>Enviado: {fmtDate(i.dataInicio)}</span>
+            {i.dataResposta && <span>Respondido: {fmtDate(i.dataResposta)}</span>}
+          </div>
+          <div className="interacao-conteudo">{i.conteudo}</div>
+          {i.resposta && (
+            <div className="interacao-resposta">
+              <div className="interacao-resposta-label">✓ Resposta do candidato</div>
+              {i.resposta}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── DASHBOARD PAGE (CANDIDATO) ───
+function DashboardPage({ ctx }) {
+  const [dashTab, setDashTab] = useState('overview');
+  const [plan, setPlan] = useState(null);
+  const [interacoes, setInteracoes] = useState([]);
+  const [stats, setStats] = useState({ temas:0, propostas:0, interacoes:0, pendentes:0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!ctx.session || ctx.session.role !== 'CANDIDATO') { ctx.navigate('home'); return; }
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const p = await apiFetch(`/planos-de-governo/candidato/${ctx.session.id}`, {}, ctx.session.token).catch(() => null);
+      setPlan(p);
+
+      const ints = await apiFetch(`/interacoes/candidato/${ctx.session.id}`, {}, ctx.session.token).catch(() => []);
+      setInteracoes(ints);
+
+      if (p?.id) {
+        const temas = await apiFetch(`/temas/plano/${p.id}/todos`, {}, ctx.session.token).catch(() => []);
+        const props = await Promise.all(temas.map(t => apiFetch(`/propostas/tema/${t.id}/todas`, {}, ctx.session.token).catch(() => [])));
+        setStats({
+          temas: temas.length,
+          propostas: props.flat().length,
+          interacoes: ints.length,
+          pendentes: ints.filter(i => i.status === 'RECEBIDA' || i.status === 'EM_ANALISE').length
+        });
+      } else {
+        setStats(s => ({ ...s, interacoes: ints.length, pendentes: ints.filter(i => i.status === 'RECEBIDA').length }));
+      }
+    } catch {}
+    setLoading(false);
+  };
+
+  const navItems = [
+    { id:'overview', icon:'📊', label:'Visão Geral' },
+    { id:'plan', icon:'📄', label:'Plano de Governo' },
+    { id:'interactions', icon:'💬', label:'Interações' },
+    { id:'profile', icon:'👤', label:'Meu Perfil' },
+  ];
+
+  return (
+    <div className="page">
+      <div style={{ marginBottom:'1.5rem' }}>
+        <div className="page-title">Painel do Candidato</div>
+        <div className="page-subtitle">Gerencie seu plano de governo e interações com eleitores</div>
+      </div>
+
+      <div className="dashboard-grid">
+        <div className="dashboard-nav">
+          <div style={{ padding:'1.25rem 1.25rem 0.75rem', borderBottom:'1px solid var(--border)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
+              <div className="card-avatar" style={{ width:44, height:44, fontSize:'1rem' }}>{initials(ctx.session.nome)}</div>
+              <div>
+                <div style={{ fontWeight:700, fontSize:'0.9rem' }}>{ctx.session.nome}</div>
+                <div style={{ fontSize:'0.75rem', color:'var(--muted)' }}>Candidato</div>
+              </div>
+            </div>
+          </div>
+          {navItems.map(item => (
+            <div key={item.id} className={`dash-nav-item ${dashTab===item.id?'active':''}`} onClick={() => setDashTab(item.id)}>
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+              {item.id === 'interactions' && stats.pendentes > 0 && (
+                <span className="badge badge-red" style={{ marginLeft:'auto', fontSize:'0.65rem' }}>{stats.pendentes}</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div>
+          {loading ? (
+            <div className="empty-state"><div className="empty-icon">⏳</div><p>Carregando...</p></div>
+          ) : (
+            <>
+              {dashTab === 'overview' && <DashOverview stats={stats} plan={plan} interacoes={interacoes} setDashTab={setDashTab} ctx={ctx} />}
+              {dashTab === 'plan' && <DashPlan plan={plan} ctx={ctx} reload={loadData} />}
+              {dashTab === 'interactions' && <DashInteractions interacoes={interacoes} ctx={ctx} reload={loadData} />}
+              {dashTab === 'profile' && <DashProfile ctx={ctx} />}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashOverview({ stats, plan, interacoes, setDashTab, ctx }) {
+  return (
+    <div>
+      <div className="stats-row">
+        {[['📄', plan ? (plan.status === 'PUBLICADO' ? 'Publicado' : 'Rascunho') : 'Sem plano', 'Plano'],
+          ['🏷️', stats.temas, 'Temas'],
+          ['📋', stats.propostas, 'Propostas'],
+          ['💬', stats.interacoes, 'Interações'],
+          ['⏳', stats.pendentes, 'Pendentes']].map(([icon, val, label]) => (
+          <div key={label} className="stat-box">
+            <div style={{ fontSize:'1.5rem', marginBottom:'0.4rem' }}>{icon}</div>
+            <div className="stat-num" style={{ fontSize:'1.5rem' }}>{val}</div>
+            <div className="stat-label">{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {!plan && (
+        <div className="alert alert-info">
+          📄 Você ainda não criou seu plano de governo. <button className="btn btn-primary btn-sm" style={{ marginLeft:'0.5rem' }} onClick={() => setDashTab('plan')}>Criar agora</button>
+        </div>
+      )}
+
+      {interacoes.filter(i => i.status === 'RECEBIDA').length > 0 && (
+        <div className="alert alert-info">
+          💬 Você tem {interacoes.filter(i => i.status === 'RECEBIDA').length} interação(ões) aguardando resposta.
+          <button className="btn btn-primary btn-sm" style={{ marginLeft:'0.5rem' }} onClick={() => setDashTab('interactions')}>Responder</button>
+        </div>
+      )}
+
+      <div style={{ background:'#fff', border:'1px solid var(--border)', borderRadius:12, padding:'1.5rem' }}>
+        <div style={{ fontWeight:700, marginBottom:'1rem' }}>Últimas interações</div>
+        {interacoes.length === 0 ? (
+          <p style={{ color:'var(--muted)', fontSize:'0.875rem' }}>Nenhuma interação recebida ainda.</p>
+        ) : interacoes.slice(0, 3).map(i => (
+          <div key={i.id} style={{ padding:'0.85rem 0', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'1rem' }}>
+            <div>
+              <div style={{ fontWeight:600, fontSize:'0.9rem' }}>{i.titulo || i.conteudo.substring(0, 60) + '...'}</div>
+              <div style={{ fontSize:'0.78rem', color:'var(--muted)' }}>{fmtDate(i.dataInicio)}</div>
+            </div>
+            <div style={{ display:'flex', gap:'0.4rem', flexShrink:0 }}>{statusBadge(i.tipo)}{statusBadge(i.status)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DashPlan({ plan, ctx, reload }) {
+  const [form, setForm] = useState({ titulo: plan?.titulo || '', apresentacao: plan?.apresentacao || '' });
+  const [temas, setTemas] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showTemaForm, setShowTemaForm] = useState(false);
+  const [temaForm, setTemaForm] = useState({ titulo:'', descricao:'' });
+  const [showPropostaModal, setShowPropostaModal] = useState(null);
+  const [propostaForm, setPropostaForm] = useState({ titulo:'', resumo:'', detalhamento:'' });
+  const [temaPropostas, setTemaPropostas] = useState({});
+
+  const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  useEffect(() => {
+    if (plan?.id) {
+      apiFetch(`/temas/plano/${plan.id}/todos`, {}, ctx.session.token).then(async t => {
+        setTemas(t);
+        const tp = {};
+        for (const tema of t) {
+          const props = await apiFetch(`/propostas/tema/${tema.id}/todas`, {}, ctx.session.token).catch(() => []);
+          tp[tema.id] = props;
+        }
+        setTemaPropostas(tp);
+      }).catch(() => {});
+    }
+  }, [plan?.id]);
+
+  const savePlan = async () => {
+    setLoading(true);
+    try {
+      if (plan) {
+        await apiFetch(`/planos-de-governo/${plan.id}`, { method:'PATCH', body: JSON.stringify(form) }, ctx.session.token);
+        ctx.showToast('Plano atualizado!');
+      } else {
+        await apiFetch(`/planos-de-governo/candidato/${ctx.session.id}`, { method:'POST', body: JSON.stringify(form) }, ctx.session.token);
+        ctx.showToast('Plano criado!');
+      }
+      reload();
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+    setLoading(false);
+  };
+
+  const toggleStatus = async () => {
+    const newStatus = plan.status === 'PUBLICADO' ? 'RASCUNHO' : 'PUBLICADO';
+    try {
+      await apiFetch(`/planos-de-governo/${plan.id}/status?status=${newStatus}`, { method:'PATCH' }, ctx.session.token);
+      ctx.showToast(`Plano ${newStatus === 'PUBLICADO' ? 'publicado' : 'voltou para rascunho'}!`);
+      reload();
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+  };
+
+  const createTema = async () => {
+    try {
+      const t = await apiFetch(`/temas/plano/${plan.id}`, { method:'POST', body: JSON.stringify(temaForm) }, ctx.session.token);
+      setTemas(prev => [...prev, t]);
+      setTemaPropostas(prev => ({ ...prev, [t.id]: [] }));
+      setTemaForm({ titulo:'', descricao:'' });
+      setShowTemaForm(false);
+      ctx.showToast('Tema criado!');
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+  };
+
+  const createProposta = async (temaId) => {
+    try {
+      const p = await apiFetch(`/propostas/tema/${temaId}`, { method:'POST', body: JSON.stringify(propostaForm) }, ctx.session.token);
+      setTemaPropostas(prev => ({ ...prev, [temaId]: [...(prev[temaId] || []), p] }));
+      setPropostaForm({ titulo:'', resumo:'', detalhamento:'' });
+      setShowPropostaModal(null);
+      ctx.showToast('Proposta criada!');
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+  };
+
+  const toggleTemaStatus = async (tema) => {
+    const newStatus = tema.status === 'PUBLICADO' ? 'RASCUNHO' : 'PUBLICADO';
+    try {
+      await apiFetch(`/temas/${tema.id}/status?status=${newStatus}`, { method:'PATCH' }, ctx.session.token);
+      setTemas(prev => prev.map(t => t.id === tema.id ? { ...t, status: newStatus } : t));
+      ctx.showToast(`Tema ${newStatus === 'PUBLICADO' ? 'publicado' : 'voltou para rascunho'}!`);
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+  };
+
+  const togglePropostaStatus = async (propostaId, temaId, currentStatus) => {
+    const newStatus = currentStatus === 'PUBLICADO' ? 'RASCUNHO' : 'PUBLICADO';
+    try {
+      await apiFetch(`/propostas/${propostaId}/status?status=${newStatus}`, { method:'PATCH' }, ctx.session.token);
+      setTemaPropostas(prev => ({ ...prev, [temaId]: prev[temaId].map(p => p.id === propostaId ? { ...p, status: newStatus } : p) }));
+      ctx.showToast('Status atualizado!');
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+  };
+
+  return (
+    <div>
+      <div style={{ background:'#fff', border:'1px solid var(--border)', borderRadius:12, padding:'1.5rem', marginBottom:'1.5rem' }}>
+        <div className="flex justify-between items-center mb-2" style={{ marginBottom:'1.25rem' }}>
+          <div style={{ fontWeight:700, fontSize:'1.05rem' }}>📄 Plano de Governo</div>
+          {plan && (
+            <div style={{ display:'flex', gap:'0.5rem' }}>
+              {statusBadge(plan.status)}
+              <button className={`btn btn-sm ${plan.status === 'PUBLICADO' ? 'btn-outline' : 'btn-green'}`} onClick={toggleStatus}>
+                {plan.status === 'PUBLICADO' ? 'Despublicar' : '🚀 Publicar'}
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="form-group">
+          <label className="form-label">Título</label>
+          <input className="form-input" value={form.titulo} onChange={set('titulo')} placeholder="Título do seu plano de governo" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Apresentação</label>
+          <textarea className="form-textarea" value={form.apresentacao} onChange={set('apresentacao')} rows={4} placeholder="Apresente suas ideias principais..." />
+        </div>
+        <button className="btn btn-primary" onClick={savePlan} disabled={loading}>{loading ? 'Salvando...' : plan ? '💾 Salvar alterações' : '➕ Criar plano'}</button>
+      </div>
+
+      {plan && (
+        <div style={{ background:'#fff', border:'1px solid var(--border)', borderRadius:12, padding:'1.5rem' }}>
+          <div className="flex justify-between items-center" style={{ marginBottom:'1.25rem' }}>
+            <div style={{ fontWeight:700, fontSize:'1.05rem' }}>🏷️ Temas e Propostas</div>
+            <button className="btn btn-green btn-sm" onClick={() => setShowTemaForm(true)}>+ Adicionar Tema</button>
+          </div>
+
+          {showTemaForm && (
+            <div style={{ background:'var(--cream)', border:'1px solid var(--border)', borderRadius:10, padding:'1.25rem', marginBottom:'1rem' }}>
+              <div style={{ fontWeight:600, marginBottom:'1rem' }}>Novo tema</div>
+              <div className="form-group">
+                <label className="form-label">Título do tema</label>
+                <input className="form-input" value={temaForm.titulo} onChange={e => setTemaForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ex: Saúde, Educação, Mobilidade..." />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Descrição</label>
+                <input className="form-input" value={temaForm.descricao} onChange={e => setTemaForm(f => ({ ...f, descricao: e.target.value }))} placeholder="Breve descrição do tema" />
+              </div>
+              <div style={{ display:'flex', gap:'0.5rem' }}>
+                <button className="btn btn-primary btn-sm" onClick={createTema}>Criar tema</button>
+                <button className="btn btn-outline btn-sm" onClick={() => setShowTemaForm(false)}>Cancelar</button>
+              </div>
+            </div>
+          )}
+
+          {temas.length === 0 ? (
+            <div className="empty-state" style={{ padding:'2rem' }}>
+              <div className="empty-icon">🏷️</div>
+              <div className="empty-title">Nenhum tema criado</div>
+              <div className="empty-sub">Adicione temas para organizar suas propostas</div>
+            </div>
+          ) : temas.map(tema => (
+            <div key={tema.id} style={{ border:'1px solid var(--border)', borderRadius:10, marginBottom:'1rem', overflow:'hidden' }}>
+              <div style={{ padding:'1rem 1.25rem', background:'var(--cream)', display:'flex', alignItems:'center', gap:'0.75rem' }}>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontWeight:700 }}>{tema.titulo}</div>
+                  {tema.descricao && <div style={{ fontSize:'0.8rem', color:'var(--muted)' }}>{tema.descricao}</div>}
+                </div>
+                <div style={{ display:'flex', gap:'0.5rem', alignItems:'center' }}>
+                  {statusBadge(tema.status)}
+                  <button className={`btn btn-sm ${tema.status === 'PUBLICADO' ? 'btn-outline' : 'btn-green'}`} onClick={() => toggleTemaStatus(tema)}>
+                    {tema.status === 'PUBLICADO' ? 'Despublicar' : 'Publicar'}
+                  </button>
+                  <button className="btn btn-primary btn-sm" onClick={() => { setShowPropostaModal(tema.id); setPropostaForm({ titulo:'', resumo:'', detalhamento:'' }); }}>+ Proposta</button>
+                </div>
+              </div>
+              <div style={{ padding:'0.75rem 1.25rem' }}>
+                {(temaPropostas[tema.id] || []).length === 0 ? (
+                  <p style={{ fontSize:'0.8rem', color:'var(--muted)', padding:'0.5rem 0' }}>Nenhuma proposta ainda.</p>
+                ) : (temaPropostas[tema.id] || []).map(p => (
+                  <div key={p.id} style={{ display:'flex', alignItems:'center', gap:'0.75rem', padding:'0.6rem 0', borderBottom:'1px solid var(--border)', fontSize:'0.875rem' }}>
+                    <div style={{ flex:1 }}>
+                      <span style={{ fontWeight:600 }}>{p.titulo}</span>
+                      <span style={{ color:'var(--muted)', marginLeft:'0.5rem' }}>{p.resumo.substring(0,60)}...</span>
+                    </div>
+                    <div style={{ display:'flex', gap:'0.4rem', flexShrink:0 }}>
+                      {statusBadge(p.status)}
+                      <button className={`btn btn-sm ${p.status === 'PUBLICADO' ? 'btn-outline' : 'btn-green'}`} onClick={() => togglePropostaStatus(p.id, tema.id, p.status)}>
+                        {p.status === 'PUBLICADO' ? 'Despublicar' : 'Publicar'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showPropostaModal && (
+        <div className="modal-overlay" onClick={() => setShowPropostaModal(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Nova Proposta</div>
+              <button className="modal-close" onClick={() => setShowPropostaModal(null)}>✕</button>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Título da proposta</label>
+              <input className="form-input" value={propostaForm.titulo} onChange={e => setPropostaForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Título objetivo e claro" maxLength={150} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Resumo</label>
+              <textarea className="form-textarea" value={propostaForm.resumo} onChange={e => setPropostaForm(f => ({ ...f, resumo: e.target.value }))} rows={3} placeholder="Descrição breve da proposta" maxLength={300} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Detalhamento <span style={{ color:'var(--muted)', fontSize:'0.8rem' }}>(opcional)</span></label>
+              <textarea className="form-textarea" value={propostaForm.detalhamento} onChange={e => setPropostaForm(f => ({ ...f, detalhamento: e.target.value }))} rows={4} placeholder="Detalhes técnicos, prazos, custos estimados..." />
+            </div>
+            <div style={{ display:'flex', gap:'0.75rem' }}>
+              <button className="btn btn-primary" onClick={() => createProposta(showPropostaModal)} disabled={!propostaForm.titulo || !propostaForm.resumo}>Criar proposta</button>
+              <button className="btn btn-outline" onClick={() => setShowPropostaModal(null)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DashInteractions({ interacoes, ctx, reload }) {
+  const [filter, setFilter] = useState('');
+  const [respForm, setRespForm] = useState({});
+  const [loading, setLoading] = useState({});
+
+  const filtered = filter ? interacoes.filter(i => i.status === filter || i.tipo === filter) : interacoes;
+
+  const respond = async (id) => {
+    if (!respForm[id]?.trim()) return;
+    setLoading(l => ({ ...l, [id]: true }));
+    try {
+      await apiFetch(`/interacoes/${id}/responder`, { method:'PATCH', body: JSON.stringify({ resposta: respForm[id] }) }, ctx.session.token);
+      ctx.showToast('Resposta enviada!');
+      reload();
+      setRespForm(f => ({ ...f, [id]: '' }));
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+    setLoading(l => ({ ...l, [id]: false }));
+  };
+
+  const updateStatus = async (id, status) => {
+    try {
+      await apiFetch(`/interacoes/${id}/status?status=${status}`, { method:'PATCH' }, ctx.session.token);
+      ctx.showToast('Status atualizado!');
+      reload();
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+  };
+
+  return (
+    <div>
+      <div style={{ display:'flex', gap:'0.5rem', marginBottom:'1.5rem', flexWrap:'wrap' }}>
+        {['','RECEBIDA','EM_ANALISE','RESPONDIDA','FINALIZADA','DUVIDA','DEMANDA'].map(f => (
+          <button key={f} className={`btn btn-sm ${filter===f?'btn-primary':'btn-outline'}`} onClick={() => setFilter(f)}>
+            {f || 'Todas'}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="empty-state"><div className="empty-icon">💬</div><div className="empty-title">Nenhuma interação</div></div>
+      ) : filtered.map(i => (
+        <div key={i.id} className="interacao-card">
+          <div className="interacao-header">
+            <div className="interacao-title">{i.titulo || '(sem título)'}</div>
+            <div style={{ display:'flex', gap:'0.4rem' }}>{statusBadge(i.tipo)}{statusBadge(i.status)}</div>
+          </div>
+          <div className="interacao-meta">
+            <span>Eleitor #{i.eleitorId}</span>
+            <span>{fmtDate(i.dataInicio)}</span>
+          </div>
+          <div className="interacao-conteudo">{i.conteudo}</div>
+
+          {i.urlComprovacao && (
+            <div style={{ fontSize:'0.8rem', marginBottom:'0.75rem' }}>
+              🔗 <a href={i.urlComprovacao} target="_blank" rel="noopener noreferrer" style={{ color:'var(--gold)' }}>{i.urlComprovacao}</a>
+            </div>
+          )}
+
+          {i.resposta && (
+            <div className="interacao-resposta">
+              <div className="interacao-resposta-label">✓ Sua resposta</div>
+              {i.resposta}
+            </div>
+          )}
+
+          {(i.status === 'RECEBIDA' || i.status === 'EM_ANALISE') && (
+            <div className="responder-form">
+              <textarea
+                className="form-textarea"
+                value={respForm[i.id] || ''}
+                onChange={e => setRespForm(f => ({ ...f, [i.id]: e.target.value }))}
+                placeholder="Digite sua resposta..."
+                rows={3}
+              />
+              <div style={{ display:'flex', gap:'0.5rem', marginTop:'0.75rem', flexWrap:'wrap' }}>
+                <button className="btn btn-green btn-sm" onClick={() => respond(i.id)} disabled={loading[i.id] || !respForm[i.id]?.trim()}>
+                  {loading[i.id] ? 'Enviando...' : '✓ Responder'}
+                </button>
+                <button className="btn btn-outline btn-sm" onClick={() => updateStatus(i.id, 'EM_ANALISE')}>Em análise</button>
+                <button className="btn btn-outline btn-sm" onClick={() => updateStatus(i.id, 'FINALIZADA')}>Finalizar</button>
+              </div>
+            </div>
+          )}
+
+          {i.status === 'RESPONDIDA' && (
+            <button className="btn btn-outline btn-sm" style={{ marginTop:'0.75rem' }} onClick={() => updateStatus(i.id, 'FINALIZADA')}>Finalizar interação</button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DashProfile({ ctx }) {
+  const [form, setForm] = useState({ nome:'', email:'', partido:'', cargo:'', biografia:'', senha:'' });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    apiFetch(`/candidatos/${ctx.session.id}`, {}, ctx.session.token)
+      .then(d => setForm({ nome: d.nome, email: d.email, partido: d.partido || '', cargo: d.cargo || '', biografia: d.biografia || '', senha:'' }))
+      .catch(() => {});
+  }, []);
+
+  const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const save = async () => {
+    setLoading(true);
+    try {
+      const body = { ...form };
+      if (!body.senha) delete body.senha;
+      await apiFetch(`/candidatos/${ctx.session.id}`, { method:'PUT', body: JSON.stringify(body) }, ctx.session.token);
+      ctx.showToast('Perfil atualizado!');
+    } catch(e) { ctx.showToast(e.message, 'error'); }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ background:'#fff', border:'1px solid var(--border)', borderRadius:12, padding:'1.5rem', maxWidth:580 }}>
+      <div style={{ fontWeight:700, fontSize:'1.05rem', marginBottom:'1.25rem' }}>👤 Meu Perfil</div>
+      <div className="form-group"><label className="form-label">Nome</label><input className="form-input" value={form.nome} onChange={set('nome')} /></div>
+      <div className="form-group"><label className="form-label">E-mail</label><input className="form-input" type="email" value={form.email} onChange={set('email')} /></div>
+      <div className="form-group"><label className="form-label">Partido</label><input className="form-input" value={form.partido} onChange={set('partido')} /></div>
+      <div className="form-group"><label className="form-label">Cargo</label><input className="form-input" value={form.cargo} onChange={set('cargo')} /></div>
+      <div className="form-group"><label className="form-label">Biografia</label><textarea className="form-textarea" value={form.biografia} onChange={set('biografia')} rows={4} /></div>
+      <div className="form-group"><label className="form-label">Nova senha <span style={{ color:'var(--muted)', fontSize:'0.8rem' }}>(deixe em branco para não alterar)</span></label><input className="form-input" type="password" value={form.senha} onChange={set('senha')} placeholder="••••••••" /></div>
+      <button className="btn btn-primary" onClick={save} disabled={loading}>{loading ? 'Salvando...' : '💾 Salvar perfil'}</button>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
